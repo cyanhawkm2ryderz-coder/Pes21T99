@@ -5,8 +5,8 @@ import os, uuid, asyncio, threading
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
-import psycopg2
-import psycopg2.extras
+import psycopg
+from psycopg.rows import dict_row
 
 load_dotenv()
 app = Flask(__name__)
@@ -96,7 +96,8 @@ def get_db():
     url = _DB_URL
     if url and "sslmode" not in url:
         url += "?sslmode=require"
-    return psycopg2.connect(url)
+    # prepare_threshold=None disables prepared statements (required for PgBouncer Transaction Pooler)
+    return psycopg.connect(url, prepare_threshold=None)
 
 
 def init_db():
@@ -126,7 +127,7 @@ def init_db():
 def get_player(wid):
     conn = get_db()
     try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("SELECT * FROM players WHERE web_id=%s", (wid,))
             r = cur.fetchone()
             return dict(r) if r else None
@@ -215,7 +216,7 @@ def ping():
 def lobby():
     conn = get_db()
     try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 "SELECT * FROM players WHERE is_ready=1 ORDER BY updated_at DESC"
             )
@@ -288,7 +289,7 @@ def connect():
 
     conn = get_db()
     try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 "SELECT * FROM players WHERE web_id=%s AND is_ready=1 AND matched_with IS NULL",
                 (target_wid,)
