@@ -44,6 +44,13 @@ header h1 span{color:var(--accent)}
   cursor:pointer;align-items:center;justify-content:center;
   touch-action:manipulation;flex-shrink:0
 }
+#reload-btn{
+  width:30px;height:30px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;color:var(--hint);font-size:.9rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;flex-shrink:0;transition:transform .3s
+}
+#reload-btn.spinning{transform:rotate(360deg)}
 
 /* ── Scroll area ── */
 #scroll{
@@ -268,18 +275,13 @@ header h1 span{color:var(--accent)}
 .mc-opp{font-size:1.1rem;font-weight:700;margin-bottom:20px}
 .mc-nolink{font-size:.78rem;color:var(--hint);margin:10px 0 0}
 
-#mc-join{
-  flex:1;display:block;background:var(--accent);color:#000;
-  font-weight:800;padding:13px 0;border-radius:12px;
-  text-decoration:none;font-size:.95rem;text-align:center
-}
 #mc-copy{
-  flex-shrink:0;padding:13px 16px;border-radius:12px;border:none;
-  background:rgba(255,255,255,.1);color:var(--text);
-  font-size:1rem;cursor:pointer;touch-action:manipulation
+  width:100%;padding:13px 0;border-radius:12px;border:none;
+  background:var(--accent);color:#000;
+  font-weight:800;font-size:.95rem;cursor:pointer;touch-action:manipulation
 }
-#mc-copy:active{background:rgba(255,255,255,.2)}
-.mc-link-row{display:flex;gap:8px}
+#mc-copy:active{opacity:.8}
+.mc-link-row{display:block}
 #mc-close{
   margin-top:11px;width:100%;padding:11px;
   border-radius:12px;border:1px solid var(--border);
@@ -297,6 +299,7 @@ header h1 span{color:var(--accent)}
 <header>
   <h1>⚽ PES <span>LOBBY</span></h1>
   <span class="badge-online" id="online-count">🟢 0 online</span>
+  <button id="reload-btn" onclick="reloadLobby()" title="Tải lại">↻</button>
   <button id="avatar-btn" onclick="openSheet()"></button>
 </header>
 
@@ -313,8 +316,8 @@ header h1 span{color:var(--accent)}
 
   <!-- Action buttons -->
   <div id="action-row">
-    <button class="btn-act manual" id="btn-lobby"  onclick="doReady(false)">🎮 Vào Lobby</button>
-    <button class="btn-act auto"   id="btn-auto"   onclick="doReady(true)">⚡ Tự Ghép</button>
+    <button class="btn-act manual" id="btn-lobby"  onclick="doReady(false)">📋 Danh sách chờ</button>
+    <button class="btn-act auto"   id="btn-auto"   onclick="doReady(true)">🎲 Ghép Random</button>
     <button class="btn-act cancel" id="btn-cancel2" style="display:none" onclick="cancelReady()">✕ Hủy</button>
   </div>
 
@@ -322,8 +325,7 @@ header h1 span{color:var(--accent)}
     <h2>⚔️ Ghép trận thành công!</h2>
     <p id="match-desc"></p>
     <div class="link-row" id="banner-link-row" style="display:none">
-      <a id="btn-join" class="btn-join" target="_blank" rel="noopener">🔗 Vào Parsec →</a>
-      <button class="btn-copy" onclick="copyLink('banner')" title="Copy link">📋</button>
+      <button class="btn-join" onclick="copyLink('banner')">📋 Copy Link Parsec</button>
     </div>
     <p id="match-nolink" style="display:none;color:var(--hint);font-size:.8rem;margin-top:8px">
       Chưa có link Parsec — liên hệ đối thủ để trao đổi link!
@@ -338,7 +340,7 @@ header h1 span{color:var(--accent)}
 
 <!-- Fallback buttons for non-Telegram browser -->
 <div id="fallback-btns">
-  <button class="fbtn fbtn-green" id="fbtn-ready"  onclick="doReady(false)" style="flex:1">🎮 Vào Lobby</button>
+  <button class="fbtn fbtn-green" id="fbtn-ready"  onclick="doReady(false)" style="flex:1">📋 Danh sách chờ</button>
   <button class="fbtn fbtn-red"   id="fbtn-cancel" style="display:none;flex:1" onclick="cancelReady()">✕ Hủy</button>
 </div>
 
@@ -352,8 +354,7 @@ header h1 span{color:var(--accent)}
     <div class="mc-vs">Đối thủ của bạn</div>
     <div class="mc-opp" id="mc-opp-name">—</div>
     <div class="mc-link-row" id="mc-link-row">
-      <a id="mc-join" target="_blank" rel="noopener">🔗 Vào Parsec ngay →</a>
-      <button id="mc-copy" onclick="copyLink('overlay')" title="Copy link">📋</button>
+      <button id="mc-copy" onclick="copyLink('overlay')">📋 Copy Link Parsec</button>
     </div>
     <p class="mc-nolink" id="mc-nolink" style="display:none">
       Chưa có link — liên hệ đối thủ để trao đổi!
@@ -524,7 +525,7 @@ function syncMainButton() {
   } else {
     const c  = tg.themeParams.button_color      || '#5288c1';
     const ct = tg.themeParams.button_text_color || '#ffffff';
-    tg.MainButton.setParams({text:'⚡ Tự Ghép', color:c, text_color:ct});
+    tg.MainButton.setParams({text:'🎲 Ghép Random', color:c, text_color:ct});
   }
   tg.MainButton.show();
   tg.MainButton.onClick(onMainBtn);
@@ -619,7 +620,6 @@ function showMatchBanner(opponentName, link) {
   const bannerRow = document.getElementById('banner-link-row');
   desc.textContent = opponentName ? `⚔️ Đối thủ: ${opponentName}` : '⚔️ Đã ghép trận!';
   if (link) {
-    document.getElementById('btn-join').href = link;
     bannerRow.style.display = 'flex';
     bannerRow.dataset.link  = link;
     nolink.style.display    = 'none';
@@ -634,8 +634,7 @@ function showMatchBanner(opponentName, link) {
   const mcLinkRow = document.getElementById('mc-link-row');
   const mcNolink  = document.getElementById('mc-nolink');
   if (link) {
-    document.getElementById('mc-join').href = link;
-    mcLinkRow.style.display = 'flex';
+    mcLinkRow.style.display = 'block';
     mcLinkRow.dataset.link  = link;
     mcNolink.style.display  = 'none';
   } else {
@@ -843,24 +842,31 @@ function toast(msg) {
 }
 
 function copyLink(src) {
-  const row  = document.getElementById(src === 'overlay' ? 'mc-link-row' : 'banner-link-row');
-  const link = row?.dataset.link || document.getElementById(src === 'overlay' ? 'mc-join' : 'btn-join')?.href;
+  const rowId = src === 'overlay' ? 'mc-link-row' : 'banner-link-row';
+  const row   = document.getElementById(rowId);
+  const link  = row?.dataset.link;
   if (!link) return;
   haptic('light');
-  navigator.clipboard.writeText(link).then(() => {
-    const btn = src === 'overlay' ? document.getElementById('mc-copy') : row.querySelector('.btn-copy');
-    const orig = btn.textContent;
-    btn.textContent = '✅';
+  const btn  = src === 'overlay' ? document.getElementById('mc-copy') : row.querySelector('.btn-join');
+  const orig = btn.textContent;
+  const doFeedback = () => {
+    btn.textContent = '✅ Đã copy!';
     setTimeout(() => { btn.textContent = orig; }, 1500);
-    toast('📋 Đã copy link!');
-  }).catch(() => {
-    // Fallback for older browsers
+    toast('📋 Đã copy link Parsec!');
+  };
+  navigator.clipboard?.writeText(link).then(doFeedback).catch(() => {
     const el = document.createElement('textarea');
-    el.value = link; document.body.appendChild(el);
-    el.select(); document.execCommand('copy');
-    document.body.removeChild(el);
-    toast('📋 Đã copy link!');
+    el.value = link; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    doFeedback();
   });
+}
+
+async function reloadLobby() {
+  const btn = document.getElementById('reload-btn');
+  btn.classList.add('spinning');
+  await refreshLobby();
+  setTimeout(() => btn.classList.remove('spinning'), 400);
 }
 
 function e(s) {
