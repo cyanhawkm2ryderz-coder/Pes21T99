@@ -1,19 +1,21 @@
 """
-PES Lobby Web — UUID localStorage + Telegram webhook
+PES Lobby Web — Supabase PostgreSQL + Telegram webhook
 """
-import os, sqlite3, uuid, asyncio, threading
+import os, uuid, asyncio, threading
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
+import psycopg2
+import psycopg2.extras
 
 load_dotenv()
-app    = Flask(__name__)
-WEB_DB = "pes_web.db"
+app = Flask(__name__)
 
 BOT_TOKEN   = os.getenv("BOT_TOKEN", "")
 WEBHOOK_URL = "https://pes21t99.onrender.com/tg_webhook"
+_DB_URL     = os.getenv("DATABASE_URL", "")
 
-# ── Bot event loop (chạy trong daemon thread) ─────────────────────────────────
+# ── Bot event loop ─────────────────────────────────────────────────────────────
 _bot_loop = asyncio.new_event_loop()
 _bot_app  = None
 
@@ -88,51 +90,58 @@ def tg_webhook():
     return "ok"
 
 
+# ── DB helpers ─────────────────────────────────────────────────────────────────
+
 def get_db():
-    conn = sqlite3.connect(WEB_DB, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    return conn
+    url = _DB_URL
+    if url and "sslmode" not in url:
+        url += "?sslmode=require"
+    return psycopg2.connect(url)
 
 
 def init_db():
-    with get_db() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS players (
-                web_id       TEXT PRIMARY KEY,
-                display_name TEXT NOT NULL,
-                ingame_name  TEXT NOT NULL,
-                tier         TEXT NOT NULL DEFAULT 'Tier 3',
-                parsec_link  TEXT DEFAULT '',
-                is_ready     INTEGER DEFAULT 0,
-                matched_with TEXT,
-                match_link   TEXT,
-                updated_at   TEXT
-            )
-        """)
-        cols = {r[1] for r in conn.execute("PRAGMA table_info(players)")}
-        for col, defn in [("parsec_link","TEXT DEFAULT ''"),
-                          ("matched_with","TEXT"), ("match_link","TEXT"),
-                          ("last_seen","TEXT")]:
-            if col not in cols:
-                conn.execute(f"ALTER TABLE players ADD COLUMN {col} {defn}")
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS players (
+                    web_id       TEXT PRIMARY KEY,
+                    display_name TEXT NOT NULL,
+                    ingame_name  TEXT DEFAULT '',
+                    tier         TEXT DEFAULT 'Tier 3',
+                    parsec_link  TEXT DEFAULT '',
+                    is_ready     INTEGER DEFAULT 0,
+                    matched_with TEXT,
+                    match_link   TEXT,
+                    updated_at   TEXT,
+                    last_seen    TEXT
+                )
+            """)
+        conn.commit()
+        print("[DB] Supabase PostgreSQL ready", flush=True)
+    finally:
+        conn.close()
 
 
 def get_player(wid):
-    with get_db() as conn:
-        r = conn.execute("SELECT * FROM players WHERE web_id=?", (wid,)).fetchone()
-        return dict(r) if r else None
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM players WHERE web_id=%s", (wid,))
+            r = cur.fetchone()
+            return dict(r) if r else None
+    finally:
+        conn.close()
 
 
 def auth(req):
-    """Lấy web_id từ header, trả về (wid, player) hoặc (None, None)."""
     wid = req.headers.get("X-Web-Id", "").strip()
     if not wid:
         return None, None
     return wid, get_player(wid)
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# ── Routes ─────────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -149,20 +158,25 @@ def register():
     if not name:
         return jsonify({"error": "Thiếu tên hiển thị"}), 400
 
-    with get_db() as conn:
-        conn.execute("""
-            INSERT INTO players (web_id, display_name, ingame_name, tier, parsec_link, updated_at)
-            VALUES (?,?,?,?,?,?)
-            ON CONFLICT(web_id) DO UPDATE SET
-                display_name=excluded.display_name,
-                ingame_name=excluded.ingame_name,
-                tier=excluded.tier,
-                parsec_link=excluded.parsec_link,
-                updated_at=excluded.updated_at
-        """, (wid, name, ingame,
-              d.get("tier","Tier 3"),
-              d.get("parsec_link",""),
-              datetime.now().isoformat()))
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO players (web_id, display_name, ingame_name, tier, parsec_link, updated_at)
+                VALUES (%s,%s,%s,%s,%s,%s)
+                ON CONFLICT(web_id) DO UPDATE SET
+                    display_name=EXCLUDED.display_name,
+                    ingame_name=EXCLUDED.ingame_name,
+                    tier=EXCLUDED.tier,
+                    parsec_link=EXCLUDED.parsec_link,
+                    updated_at=EXCLUDED.updated_at
+            """, (wid, name, ingame,
+                  d.get("tier", "Tier 3"),
+                  d.get("parsec_link", ""),
+                  datetime.now().isoformat()))
+        conn.commit()
+    finally:
+        conn.close()
 
     return jsonify({"ok": True, "web_id": wid, "profile": get_player(wid)})
 
@@ -180,22 +194,34 @@ def ping():
     wid, player = auth(request)
     if not player:
         return jsonify({"error": "not found"}), 404
-    now = datetime.now().isoformat()
+
+    now    = datetime.now().isoformat()
     cutoff = (datetime.now() - timedelta(seconds=35)).isoformat()
-    with get_db() as conn:
-        conn.execute("UPDATE players SET last_seen=? WHERE web_id=?", (now, wid))
-        count = conn.execute(
-            "SELECT COUNT(*) FROM players WHERE last_seen >= ?", (cutoff,)
-        ).fetchone()[0]
+
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE players SET last_seen=%s WHERE web_id=%s", (now, wid))
+            cur.execute("SELECT COUNT(*) FROM players WHERE last_seen >= %s", (cutoff,))
+            count = cur.fetchone()[0]
+        conn.commit()
+    finally:
+        conn.close()
+
     return jsonify({"online": count})
 
 
 @app.route("/api/lobby")
 def lobby():
-    with get_db() as conn:
-        rows = conn.execute(
-            "SELECT * FROM players WHERE is_ready=1 ORDER BY updated_at DESC"
-        ).fetchall()
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                "SELECT * FROM players WHERE is_ready=1 ORDER BY updated_at DESC"
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
     return jsonify([dict(r) for r in rows])
 
 
@@ -216,12 +242,18 @@ def set_ready():
     wid, player = auth(request)
     if not player:
         return jsonify({"error": "Chưa đăng ký"}), 401
-    with get_db() as conn:
-        conn.execute("""
-            UPDATE players
-            SET is_ready=1, matched_with=NULL, match_link=NULL, updated_at=?
-            WHERE web_id=?
-        """, (datetime.now().isoformat(), wid))
+
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE players
+                SET is_ready=1, matched_with=NULL, match_link=NULL, updated_at=%s
+                WHERE web_id=%s
+            """, (datetime.now().isoformat(), wid))
+        conn.commit()
+    finally:
+        conn.close()
     return jsonify({"ok": True})
 
 
@@ -230,11 +262,17 @@ def cancel():
     wid, _ = auth(request)
     if not wid:
         return jsonify({"error": "Chưa đăng ký"}), 401
-    with get_db() as conn:
-        conn.execute(
-            "UPDATE players SET is_ready=0, matched_with=NULL, match_link=NULL WHERE web_id=?",
-            (wid,)
-        )
+
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE players SET is_ready=0, matched_with=NULL, match_link=NULL WHERE web_id=%s",
+                (wid,)
+            )
+        conn.commit()
+    finally:
+        conn.close()
     return jsonify({"ok": True})
 
 
@@ -248,27 +286,33 @@ def connect():
     target_wid = d.get("target_id", "")
     host       = d.get("host", "them")
 
-    with get_db() as conn:
-        target = conn.execute(
-            "SELECT * FROM players WHERE web_id=? AND is_ready=1 AND matched_with IS NULL",
-            (target_wid,)
-        ).fetchone()
-        if not target:
-            return jsonify({"error": "Slot đã bị khoá!"}), 409
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                "SELECT * FROM players WHERE web_id=%s AND is_ready=1 AND matched_with IS NULL",
+                (target_wid,)
+            )
+            target = cur.fetchone()
+            if not target:
+                return jsonify({"error": "Slot đã bị khoá!"}), 409
 
-        target = dict(target)
-        link_for_me     = target["parsec_link"] if host == "them" else None
-        link_for_target = me["parsec_link"]     if host == "me"   else None
-        now = datetime.now().isoformat()
+            target = dict(target)
+            link_for_me     = target["parsec_link"] if host == "them" else None
+            link_for_target = me["parsec_link"]     if host == "me"   else None
+            now = datetime.now().isoformat()
 
-        conn.execute(
-            "UPDATE players SET is_ready=0, matched_with=?, match_link=?, updated_at=? WHERE web_id=?",
-            (wid, link_for_target, now, target_wid)
-        )
-        conn.execute(
-            "UPDATE players SET is_ready=0, matched_with=?, match_link=?, updated_at=? WHERE web_id=?",
-            (target_wid, link_for_me, now, wid)
-        )
+            cur.execute(
+                "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
+                (wid, link_for_target, now, target_wid)
+            )
+            cur.execute(
+                "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
+                (target_wid, link_for_me, now, wid)
+            )
+        conn.commit()
+    finally:
+        conn.close()
 
     return jsonify({"ok": True, "link": link_for_me, "opponent": target["display_name"]})
 
