@@ -263,10 +263,13 @@ def set_ready():
             """, (now, wid))
 
             if auto:
-                # Auto-match: tìm người chờ lâu nhất (FIFO)
-                cur.execute("""
+                # Auto-match FIFO — nếu mình không có link thì chỉ ghép với người có link
+                me_has_link = bool(me.get("parsec_link"))
+                link_filter = "" if me_has_link else "AND (parsec_link IS NOT NULL AND parsec_link != '')"
+                cur.execute(f"""
                     SELECT * FROM players
                     WHERE is_ready=1 AND web_id != %s AND matched_with IS NULL
+                    {link_filter}
                     ORDER BY updated_at ASC
                     LIMIT 1
                     FOR UPDATE SKIP LOCKED

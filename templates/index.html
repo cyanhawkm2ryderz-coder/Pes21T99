@@ -578,10 +578,11 @@ function buildCard(p) {
   }
 
   const canConnect = !!S.profile && p.web_id !== myId;
+  const tLink = (p.parsec_link || '').replace(/'/g, "\\'");
   const actions = canConnect
     ? `<div class="c-actions">
-        <button class="btn-h them" onclick="connect('${p.web_id}','them')">Host bạn</button>
-        <button class="btn-h me"   onclick="connect('${p.web_id}','me')">Host tôi</button>
+        <button class="btn-h them" onclick="connect('${p.web_id}','them','${tLink}')">Host bạn</button>
+        <button class="btn-h me"   onclick="connect('${p.web_id}','me','${tLink}')">Host tôi</button>
       </div>`
     : `<div class="c-actions" style="font-size:.7rem;color:var(--hint)">⚠️</div>`;
 
@@ -723,19 +724,32 @@ function updateFallbackBtns() {
 }
 
 // ── Connect ────────────────────────────────────────────────────────────────────
-async function connect(targetId, host) {
+async function connect(targetId, host, targetLink='') {
   if (!S.profile) { openSheet(true); return; }
+
+  const myLink = S.profile.parsec_link || '';
+  if (!myLink && !targetLink) {
+    haptic('heavy');
+    toast('⚠️ Cả hai chưa có link Parsec!');
+    try {
+      tg?.showPopup({
+        title: '⚠️ Chưa có Parsec Host',
+        message: 'Cả hai bạn đều chưa có link Parsec.\nHãy thêm link vào hồ sơ để có thể chơi cùng nhau!',
+        buttons: [{id:'add', type:'default', text:'Thêm link ngay'}, {type:'cancel'}]
+      }, id => { if (id === 'add') openSheet(); });
+    } catch(e) { openSheet(); }
+    return;
+  }
+
   haptic('medium');
   const d = await api('/api/connect', 'POST', {target_id: targetId, host});
   if (d.error) { toast('⚠️ ' + d.error); refreshLobby(); return; }
 
-  // Mở link ngay nếu có
   if (d.link) {
     if (tg) tg.openLink(d.link);
     else window.open(d.link, '_blank', 'noopener');
   }
 
-  // Hiện overlay match (kể cả khi không có link)
   showMatchBanner(d.opponent || '', d.link || '');
   refreshLobby();
 }
