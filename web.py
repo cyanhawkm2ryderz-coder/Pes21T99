@@ -1,14 +1,91 @@
 """
-PES Lobby Web — UUID localStorage (no login required)
+PES Lobby Web — UUID localStorage + Telegram webhook
 """
-import os, sqlite3, uuid
+import os, sqlite3, uuid, asyncio, threading
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
 
 load_dotenv()
-app = Flask(__name__)
+app    = Flask(__name__)
 WEB_DB = "pes_web.db"
+
+BOT_TOKEN   = os.getenv("BOT_TOKEN", "")
+WEBHOOK_URL = "https://pes21t99.onrender.com/tg_webhook"
+
+# ── Bot event loop (chạy trong daemon thread) ─────────────────────────────────
+_bot_loop = asyncio.new_event_loop()
+_bot_app  = None
+
+def _run_loop():
+    asyncio.set_event_loop(_bot_loop)
+    _bot_loop.run_forever()
+
+threading.Thread(target=_run_loop, daemon=True).start()
+
+def _async(coro):
+    return asyncio.run_coroutine_threadsafe(coro, _bot_loop).result(timeout=30)
+
+async def _init_bot():
+    global _bot_app
+    if not BOT_TOKEN:
+        print("[BOT] No BOT_TOKEN, skipping", flush=True)
+        return
+    try:
+        from telegram.ext import (Application, CommandHandler, CallbackQueryHandler,
+                                   ConversationHandler, MessageHandler, filters)
+        from bot import (cmd_start, cmd_register, cmd_ready, cmd_cancel, cmd_profile,
+                         cmd_lobby, cb_host_them, cb_host_me, cmd_help, cmd_setlink,
+                         got_ingame, got_platform, got_tier, got_parsec,
+                         cancel as conv_cancel,
+                         ASK_INGAME, ASK_PLATFORM, ASK_TIER, ASK_PARSEC)
+
+        application = Application.builder().token(BOT_TOKEN).build()
+
+        conv = ConversationHandler(
+            entry_points=[CommandHandler("register", cmd_register)],
+            states={
+                ASK_INGAME:   [MessageHandler(filters.TEXT & ~filters.COMMAND, got_ingame)],
+                ASK_PLATFORM: [MessageHandler(filters.TEXT & ~filters.COMMAND, got_platform)],
+                ASK_TIER:     [MessageHandler(filters.TEXT & ~filters.COMMAND, got_tier)],
+                ASK_PARSEC:   [MessageHandler(filters.TEXT & ~filters.COMMAND, got_parsec)],
+            },
+            fallbacks=[CommandHandler("cancel", conv_cancel)],
+        )
+        application.add_handler(conv)
+        application.add_handler(CommandHandler("start",   cmd_start))
+        application.add_handler(CommandHandler("help",    cmd_help))
+        application.add_handler(CommandHandler("setlink", cmd_setlink))
+        application.add_handler(CommandHandler("ready",   cmd_ready))
+        application.add_handler(CommandHandler("cancel",  cmd_cancel))
+        application.add_handler(CommandHandler("profile", cmd_profile))
+        application.add_handler(CommandHandler("timdoi",  cmd_lobby))
+        application.add_handler(CallbackQueryHandler(cb_host_them, pattern=r"^host_them:\d+$"))
+        application.add_handler(CallbackQueryHandler(cb_host_me,   pattern=r"^host_me:\d+$"))
+
+        await application.initialize()
+        await application.start()
+        await application.bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True)
+        _bot_app = application
+        print(f"[BOT] Webhook ready: {WEBHOOK_URL}", flush=True)
+    except Exception as e:
+        import traceback
+        print(f"[BOT ERROR] {e}", flush=True)
+        traceback.print_exc()
+
+
+@app.route("/tg_webhook", methods=["POST"])
+def tg_webhook():
+    if not _bot_app:
+        return "not ready", 503
+    try:
+        from telegram import Update
+        data   = request.get_json(force=True, silent=True) or {}
+        update = Update.de_json(data, _bot_app.bot)
+        _async(_bot_app.process_update(update))
+    except Exception as e:
+        print(f"[WEBHOOK ERR] {e}", flush=True)
+    return "ok"
 
 
 def get_db():
@@ -198,6 +275,7 @@ def connect():
 
 if __name__ == "__main__":
     init_db()
+    _async(_init_bot())
     port = int(os.environ.get("PORT", 5000))
-    print(f"Web chay tai http://localhost:{port}")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    print(f"[WEB] Starting on port {port}", flush=True)
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
