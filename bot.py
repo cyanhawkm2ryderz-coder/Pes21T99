@@ -14,13 +14,14 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, WebAppInfo
 from telegram.ext import (Application, CommandHandler, CallbackQueryHandler,
                            ConversationHandler, MessageHandler, filters, ContextTypes)
 import database as db
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+WEB_URL   = "https://pes21t99.onrender.com"
 logging.basicConfig(format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO)
 
 # Conversation states
@@ -407,6 +408,15 @@ async def cb_host_me(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         pass
 
 
+# ── /lobby ───────────────────────────────────────────────────────────────────
+
+async def cmd_lobby(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    kb = InlineKeyboardMarkup([[
+        InlineKeyboardButton("🎮 Mở Lobby", web_app=WebAppInfo(url=WEB_URL))
+    ]])
+    await update.message.reply_text("⚽ Bấm để vào sảnh tìm đối:", reply_markup=kb)
+
+
 # ── /help ─────────────────────────────────────────────────────────────────────
 
 async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -447,6 +457,7 @@ def main():
 
     app.add_handler(conv)
     app.add_handler(CommandHandler("start",   cmd_start))
+    app.add_handler(CommandHandler("lobby",   cmd_lobby))
     app.add_handler(CommandHandler("help",    cmd_help))
     app.add_handler(CommandHandler("setlink", cmd_setlink))
     app.add_handler(CommandHandler("ready",   cmd_ready))
