@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:crawbot.net)",
+      "WebFetch(domain:github.com)",
+      "Bash(pip install *)",
+      "Bash(python bot.py)",
+      "Bash(ping -n 4 127.0.0.1)",
+      "PowerShell(Stop-Process -Name python -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Name python3 -Force -ErrorAction SilentlyContinue)",
+      "Bash(python web.py)",
+      "PowerShell(Start-Process python -ArgumentList \"f:\\\\CRAW BOT\\\\web.py\" -WorkingDirectory \"f:\\\\CRAW BOT\" -WindowStyle Hidden)",
+      "PowerShell(Start-Process -FilePath \"python\" -ArgumentList '\"f:\\\\CRAW BOT\\\\web.py\"' -WindowStyle Normal)",
+      "PowerShell(Stop-Process -Name python -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; Start-Process -FilePath \"python\" -ArgumentList \"web.py\" -WorkingDirectory \"f:\\\\CRAW BOT\" -WindowStyle Normal; Start-Sleep -Seconds 3; $proc = Get-Process python -ErrorAction SilentlyContinue; if \\($proc\\) { Write-Host \"OK - PID $\\($proc.Id\\)\" } else { Write-Host \"FAILED\" })",
+      "PowerShell($proc = Get-Process python -ErrorAction SilentlyContinue; if \\($proc\\) { Write-Host \"Running PID: $\\($proc.Id\\)\" } else { Write-Host \"NOT RUNNING\" })",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5000/api/register\" -Method POST -ContentType \"application/json\" -Body '{\"display_name\":\"Test\",\"ingame_name\":\"B\",\"tier\":\"Tier 3\",\"parsec_link\":\"\"}')",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5000/api/register\" -Method POST -ContentType \"application/json\" -Body '{\"display_name\":\"Test\",\"ingame_name\":\"B\",\"tier\":\"Tier 3\",\"parsec_link\":\"\"}' -ErrorAction SilentlyContinue)",
+      "PowerShell(Start-Process -FilePath \"python\" -ArgumentList \"web.py\" -WorkingDirectory \"f:\\\\CRAW BOT\" -WindowStyle Normal)"
+    ]
+  }
+}
