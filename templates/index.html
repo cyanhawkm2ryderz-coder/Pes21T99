@@ -725,25 +725,19 @@ function updateFallbackBtns() {
 // ── Connect ────────────────────────────────────────────────────────────────────
 async function connect(targetId, host) {
   if (!S.profile) { openSheet(true); return; }
-  if (host === 'me' && !S.profile.parsec_link) {
-    haptic('heavy');
-    toast('⚠️ Bạn chưa có link Parsec!'); openSheet(); return;
-  }
   haptic('medium');
   const d = await api('/api/connect', 'POST', {target_id: targetId, host});
   if (d.error) { toast('⚠️ ' + d.error); refreshLobby(); return; }
 
-  if (host === 'them' && d.link) {
-    // Open Parsec link
-    if (tg) {
-      tg.openLink(d.link);
-    } else {
-      window.open(d.link, '_blank', 'noopener');
-    }
+  // Mở link ngay nếu có
+  if (d.link) {
+    if (tg) tg.openLink(d.link);
+    else window.open(d.link, '_blank', 'noopener');
   }
-  toast(host === 'them' ? `✅ Kết nối với ${d.opponent}!` : `✅ Chờ ${d.opponent} vào Parsec!`);
-  S.matched = true; S.ready = false;
-  updateSub(); syncMainButton(); refreshLobby();
+
+  // Hiện overlay match (kể cả khi không có link)
+  showMatchBanner(d.opponent || '', d.link || '');
+  refreshLobby();
 }
 
 // ── Sheet (bottom sheet) ───────────────────────────────────────────────────────
