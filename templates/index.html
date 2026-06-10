@@ -229,9 +229,12 @@ header h1 span{color:var(--accent)}
   </div>
 
   <div id="match-banner">
-    <h2>⚔️ Trận đấu bắt đầu!</h2>
-    <p id="match-desc">Đối thủ đang host — nhấn để vào!</p>
-    <a id="btn-join" class="btn-join" target="_blank" rel="noopener">🔗 Vào Parsec →</a>
+    <h2>⚔️ Ghép trận thành công!</h2>
+    <p id="match-desc"></p>
+    <a id="btn-join" class="btn-join" target="_blank" rel="noopener" style="display:none">🔗 Vào Parsec →</a>
+    <p id="match-nolink" style="display:none;color:var(--hint);font-size:.8rem;margin-top:8px">
+      Chưa có link Parsec — liên hệ đối thủ để trao đổi link!
+    </p>
   </div>
 
   <div class="section-label">Đang tìm đối</div>
@@ -482,21 +485,44 @@ function buildCard(p) {
   </div>`;
 }
 
+// ── Match banner helper ────────────────────────────────────────────────────────
+function showMatchBanner(opponentName, link) {
+  S.matched = true; S.ready = false;
+  haptic('heavy');
+  playMatchSound();
+  updateSub(); syncMainButton(); updateFallbackBtns();
+
+  const desc    = document.getElementById('match-desc');
+  const btnJoin = document.getElementById('btn-join');
+  const nolink  = document.getElementById('match-nolink');
+
+  desc.textContent = opponentName ? `⚔️ Đối thủ: ${opponentName}` : '⚔️ Đã ghép trận!';
+
+  if (link) {
+    btnJoin.href         = link;
+    btnJoin.style.display = 'inline-block';
+    nolink.style.display  = 'none';
+  } else {
+    btnJoin.style.display = 'none';
+    nolink.style.display  = 'block';
+  }
+
+  const banner = document.getElementById('match-banner');
+  banner.style.display = 'block';
+  banner.scrollIntoView({behavior:'smooth', block:'center'});
+
+  const alertMsg = link
+    ? `⚔️ Tìm được đối thủ: ${opponentName}!\nBấm vào link Parsec để vào trận!`
+    : `⚔️ Tìm được đối thủ: ${opponentName}!\nLiên hệ đối thủ để trao đổi link Parsec!`;
+  try { tg?.showAlert(alertMsg); } catch(e){}
+}
+
 // ── Status poll ────────────────────────────────────────────────────────────────
 async function checkStatus() {
   if (!S.webId || S.matched) return;
   const s = await api('/api/status');
-  if (s.matched_with && s.match_link && !S.matched) {
-    S.matched = true; S.ready = false;
-    haptic('heavy');
-    playMatchSound();
-    updateSub(); syncMainButton(); updateFallbackBtns();
-    document.getElementById('btn-join').href = s.match_link;
-    const banner = document.getElementById('match-banner');
-    banner.style.display = 'block';
-    banner.scrollIntoView({behavior:'smooth', block:'center'});
-    // Telegram popup
-    try { tg?.showAlert('⚔️ Tìm được đối thủ! Bấm vào link Parsec để vào trận!'); } catch(e){}
+  if (s.matched_with && !S.matched) {
+    showMatchBanner(s.opponent_name || '', s.match_link || '');
   }
 }
 
@@ -508,8 +534,14 @@ async function toggleReady() {
   S.ready = true; S.matched = false;
   document.getElementById('match-banner').style.display = 'none';
   updateSub(); syncMainButton(); updateFallbackBtns();
-  await api('/api/ready', 'POST', {});
   toast('🟢 Đang tìm đối...');
+
+  const d = await api('/api/ready', 'POST', {});
+
+  if (d.matched) {
+    // Ghép ngay lập tức
+    showMatchBanner(d.opponent || '', d.link || '');
+  }
   refreshLobby();
 }
 

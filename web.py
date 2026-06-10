@@ -231,31 +231,74 @@ def status():
     wid, player = auth(request)
     if not player:
         return jsonify({"error": "not found"}), 404
-    return jsonify({
+    result = {
         "is_ready":     player["is_ready"],
         "matched_with": player["matched_with"],
         "match_link":   player["match_link"],
-    })
+    }
+    if player["matched_with"]:
+        opp = get_player(player["matched_with"])
+        if opp:
+            result["opponent_name"] = opp["display_name"]
+    return jsonify(result)
 
 
 @app.route("/api/ready", methods=["POST"])
 def set_ready():
-    wid, player = auth(request)
-    if not player:
+    wid, me = auth(request)
+    if not me:
         return jsonify({"error": "Chưa đăng ký"}), 401
 
     conn = get_db()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
+            now = datetime.now().isoformat()
             cur.execute("""
                 UPDATE players
                 SET is_ready=1, matched_with=NULL, match_link=NULL, updated_at=%s
                 WHERE web_id=%s
-            """, (datetime.now().isoformat(), wid))
+            """, (now, wid))
+
+            # Auto-match: tìm người chờ lâu nhất (FIFO), lock để tránh race condition
+            cur.execute("""
+                SELECT * FROM players
+                WHERE is_ready=1 AND web_id != %s AND matched_with IS NULL
+                ORDER BY updated_at ASC
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            """, (wid,))
+            opp = cur.fetchone()
+
+            if opp:
+                opp  = dict(opp)
+                t    = datetime.now().isoformat()
+                # Người chờ trước (opp) host nếu có link; nếu không thì mình host
+                if opp.get("parsec_link"):
+                    link_for_me  = opp["parsec_link"]
+                    link_for_opp = None
+                else:
+                    link_for_me  = None
+                    link_for_opp = me.get("parsec_link") or None
+
+                cur.execute(
+                    "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
+                    (wid, link_for_opp, t, opp["web_id"])
+                )
+                cur.execute(
+                    "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
+                    (opp["web_id"], link_for_me, t, wid)
+                )
+                conn.commit()
+                return jsonify({
+                    "ok": True, "matched": True,
+                    "opponent": opp["display_name"],
+                    "link": link_for_me,
+                })
+
         conn.commit()
     finally:
         conn.close()
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "matched": False})
 
 
 @app.route("/api/cancel", methods=["POST"])
