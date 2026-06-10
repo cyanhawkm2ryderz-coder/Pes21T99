@@ -249,6 +249,9 @@ def set_ready():
     if not me:
         return jsonify({"error": "Chưa đăng ký"}), 401
 
+    d    = request.json or {}
+    auto = d.get("auto", False)
+
     conn = get_db()
     try:
         with conn.cursor(row_factory=dict_row) as cur:
@@ -259,41 +262,41 @@ def set_ready():
                 WHERE web_id=%s
             """, (now, wid))
 
-            # Auto-match: tìm người chờ lâu nhất (FIFO), lock để tránh race condition
-            cur.execute("""
-                SELECT * FROM players
-                WHERE is_ready=1 AND web_id != %s AND matched_with IS NULL
-                ORDER BY updated_at ASC
-                LIMIT 1
-                FOR UPDATE SKIP LOCKED
-            """, (wid,))
-            opp = cur.fetchone()
+            if auto:
+                # Auto-match: tìm người chờ lâu nhất (FIFO)
+                cur.execute("""
+                    SELECT * FROM players
+                    WHERE is_ready=1 AND web_id != %s AND matched_with IS NULL
+                    ORDER BY updated_at ASC
+                    LIMIT 1
+                    FOR UPDATE SKIP LOCKED
+                """, (wid,))
+                opp = cur.fetchone()
 
-            if opp:
-                opp  = dict(opp)
-                t    = datetime.now().isoformat()
-                # Người chờ trước (opp) host nếu có link; nếu không thì mình host
-                if opp.get("parsec_link"):
-                    link_for_me  = opp["parsec_link"]
-                    link_for_opp = None
-                else:
-                    link_for_me  = None
-                    link_for_opp = me.get("parsec_link") or None
+                if opp:
+                    opp = dict(opp)
+                    t   = datetime.now().isoformat()
+                    if opp.get("parsec_link"):
+                        link_for_me  = opp["parsec_link"]
+                        link_for_opp = None
+                    else:
+                        link_for_me  = None
+                        link_for_opp = me.get("parsec_link") or None
 
-                cur.execute(
-                    "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
-                    (wid, link_for_opp, t, opp["web_id"])
-                )
-                cur.execute(
-                    "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
-                    (opp["web_id"], link_for_me, t, wid)
-                )
-                conn.commit()
-                return jsonify({
-                    "ok": True, "matched": True,
-                    "opponent": opp["display_name"],
-                    "link": link_for_me,
-                })
+                    cur.execute(
+                        "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
+                        (wid, link_for_opp, t, opp["web_id"])
+                    )
+                    cur.execute(
+                        "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
+                        (opp["web_id"], link_for_me, t, wid)
+                    )
+                    conn.commit()
+                    return jsonify({
+                        "ok": True, "matched": True,
+                        "opponent": opp["display_name"],
+                        "link": link_for_me,
+                    })
 
         conn.commit()
     finally:
