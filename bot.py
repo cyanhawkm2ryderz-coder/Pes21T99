@@ -457,7 +457,7 @@ def main():
 
     app.add_handler(conv)
     app.add_handler(CommandHandler("start",   cmd_start))
-    app.add_handler(CommandHandler("lobby",   cmd_lobby))
+    app.add_handler(CommandHandler("timdoi",  cmd_lobby))
     app.add_handler(CommandHandler("help",    cmd_help))
     app.add_handler(CommandHandler("setlink", cmd_setlink))
     app.add_handler(CommandHandler("ready",   cmd_ready))
