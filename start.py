@@ -1,23 +1,18 @@
-import threading, os, asyncio, traceback
-
-def start_bot():
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        from bot import main as bot_main
-        print("[BOT] Starting...", flush=True)
-        bot_main()
-    except Exception as e:
-        print(f"[BOT ERROR] {e}", flush=True)
-        traceback.print_exc()
+import subprocess, sys, os
 
 if __name__ == "__main__":
-    from web import app as flask_app, init_db as web_init
-    web_init()
+    print("[START] Launching bot process...", flush=True)
+    bot_proc = subprocess.Popen(
+        [sys.executable, "bot.py"],
+        stdout=sys.stdout,
+        stderr=sys.stderr
+    )
 
-    t = threading.Thread(target=start_bot, daemon=True)
-    t.start()
-
+    print("[START] Launching web server...", flush=True)
+    from web import app, init_db
+    init_db()
     port = int(os.environ.get("PORT", 5000))
-    print(f"[WEB] Starting on port {port}", flush=True)
-    flask_app.run(host="0.0.0.0", port=port, debug=False)
+    try:
+        app.run(host="0.0.0.0", port=port, debug=False)
+    finally:
+        bot_proc.terminate()
