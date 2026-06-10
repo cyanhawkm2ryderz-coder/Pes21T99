@@ -243,6 +243,22 @@ def status():
     return jsonify(result)
 
 
+@app.route("/api/setlink", methods=["POST"])
+def setlink():
+    wid, player = auth(request)
+    if not player:
+        return jsonify({"error": "Chưa đăng ký"}), 401
+    link = (request.json or {}).get("parsec_link", "").strip()
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE players SET parsec_link=%s WHERE web_id=%s", (link, wid))
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"ok": True, "parsec_link": link})
+
+
 @app.route("/api/ready", methods=["POST"])
 def set_ready():
     wid, me = auth(request)

@@ -157,6 +157,37 @@ header h1 span{color:var(--accent)}
 .btn-h.me{border-color:rgba(82,136,193,.4);color:var(--link)}
 .btn-h:active{opacity:.7;transform:scale(.95)}
 
+/* ── Link bar ── */
+#link-bar{
+  display:none;background:var(--surface);border-radius:12px;
+  padding:10px 14px;margin-bottom:10px;
+}
+#link-bar.show{display:block}
+#link-display{
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  min-height:32px
+}
+#link-display .licon{font-size:.95rem;flex-shrink:0}
+#link-display .ltext{
+  flex:1;font-size:.78rem;color:var(--hint);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+#link-display .ltext.has-link{color:var(--accent)}
+#link-display .ledit{font-size:.75rem;color:var(--hint);flex-shrink:0}
+#link-edit-row{display:none;align-items:center;gap:6px;margin-top:8px}
+#link-edit-row.show{display:flex}
+#link-input{
+  flex:1;padding:8px 10px;border-radius:8px;
+  background:var(--bg);border:1px solid var(--btn);
+  color:var(--text);font-size:.82rem;outline:none
+}
+.lbtn{
+  flex-shrink:0;padding:8px 12px;border-radius:8px;border:none;
+  font-size:.8rem;font-weight:700;cursor:pointer;touch-action:manipulation
+}
+.lbtn-save{background:var(--btn);color:var(--btn-txt)}
+.lbtn-cancel{background:transparent;color:var(--hint);border:1px solid var(--border)}
+
 /* ── Action row ── */
 #action-row{display:none;gap:8px;margin-bottom:12px}
 #action-row.show{display:flex}
@@ -312,6 +343,21 @@ header h1 span{color:var(--accent)}
       <div class="my-sub"  id="my-sub"></div>
     </div>
     <div class="status-dot" id="status-dot"></div>
+  </div>
+
+  <!-- Parsec link bar -->
+  <div id="link-bar">
+    <div id="link-display" onclick="toggleLinkEdit()">
+      <span class="licon">🔗</span>
+      <span class="ltext" id="link-text">Chưa có link Parsec — nhấn để thêm</span>
+      <span class="ledit">✏️</span>
+    </div>
+    <div id="link-edit-row">
+      <input id="link-input" placeholder="https://parsec.gg/..." type="url" autocomplete="off"
+             onkeydown="if(event.key==='Enter')saveLink()">
+      <button class="lbtn lbtn-save"   onclick="saveLink()">✓ Lưu</button>
+      <button class="lbtn lbtn-cancel" onclick="closeLinkEdit()">✗</button>
+    </div>
   </div>
 
   <!-- Action buttons -->
@@ -495,6 +541,7 @@ function renderPanel() {
   updateSub();
   syncMainButton();
   updateActionRow();
+  renderLinkBar();
 }
 
 function updateSub() {
@@ -860,6 +907,51 @@ function copyLink(src) {
     document.execCommand('copy'); document.body.removeChild(el);
     doFeedback();
   });
+}
+
+// ── Link bar ───────────────────────────────────────────────────────────────────
+function renderLinkBar() {
+  if (!S.profile) return;
+  const bar  = document.getElementById('link-bar');
+  const txt  = document.getElementById('link-text');
+  const link = S.profile.parsec_link || '';
+  bar.classList.add('show');
+  if (link) {
+    txt.textContent = link;
+    txt.className   = 'ltext has-link';
+  } else {
+    txt.textContent = 'Chưa có link Parsec — nhấn để thêm';
+    txt.className   = 'ltext';
+  }
+}
+
+function toggleLinkEdit() {
+  haptic('light');
+  const row = document.getElementById('link-edit-row');
+  const inp = document.getElementById('link-input');
+  if (row.classList.contains('show')) { closeLinkEdit(); return; }
+  inp.value = S.profile?.parsec_link || '';
+  row.classList.add('show');
+  inp.focus();
+  if (tg?.BackButton) { tg.BackButton.show(); tg.BackButton.onClick(closeLinkEdit); }
+}
+
+function closeLinkEdit() {
+  document.getElementById('link-edit-row').classList.remove('show');
+  tg?.BackButton.hide();
+}
+
+async function saveLink() {
+  const link = document.getElementById('link-input').value.trim();
+  haptic('light');
+  const d = await api('/api/setlink', 'POST', {parsec_link: link});
+  if (d.ok) {
+    S.profile.parsec_link = link;
+    renderLinkBar();
+    closeLinkEdit();
+    updateSub();
+    toast(link ? '✅ Đã lưu link Parsec!' : '✅ Đã xóa link Parsec');
+  }
 }
 
 async function reloadLobby() {
