@@ -206,6 +206,58 @@ header h1 span{color:var(--accent)}
   border-top-color:currentColor;border-radius:50%;
   animation:spin .6s linear infinite;vertical-align:middle;margin-right:4px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Match overlay ── */
+#match-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.82);
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)
+}
+#match-overlay.show{display:flex}
+
+#match-card{
+  background:var(--surface);
+  border:1.5px solid var(--accent);
+  border-radius:22px;
+  padding:32px 24px 24px;
+  text-align:center;
+  width:calc(100% - 40px);
+  max-width:320px;
+  position:relative;
+  animation:mpop .4s cubic-bezier(.175,.885,.32,1.275) both
+}
+@keyframes mpop{from{transform:scale(.5) translateY(40px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+.mc-ring{
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(0,230,118,.12);
+  border:2px solid rgba(0,230,118,.35);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;margin:0 auto 16px;
+  animation:mring 1s .3s ease-in-out infinite alternate
+}
+@keyframes mring{from{box-shadow:0 0 0 0 rgba(0,230,118,.4)}to{box-shadow:0 0 0 14px rgba(0,230,118,0)}}
+
+.mc-title{font-size:1.2rem;font-weight:800;color:var(--accent);margin-bottom:6px}
+.mc-vs{font-size:.8rem;color:var(--hint);margin-bottom:4px}
+.mc-opp{font-size:1.1rem;font-weight:700;margin-bottom:20px}
+.mc-nolink{font-size:.78rem;color:var(--hint);margin:10px 0 0}
+
+#mc-join{
+  display:block;background:var(--accent);color:#000;
+  font-weight:800;padding:13px 0;border-radius:12px;
+  text-decoration:none;font-size:.95rem;width:100%;margin-bottom:0
+}
+#mc-close{
+  margin-top:11px;width:100%;padding:11px;
+  border-radius:12px;border:1px solid var(--border);
+  background:transparent;color:var(--hint);
+  font-size:.85rem;cursor:pointer;touch-action:manipulation
+}
+.mc-timer{
+  font-size:.68rem;color:var(--hint);margin-top:8px
+}
 </style>
 </head>
 <body>
@@ -250,6 +302,22 @@ header h1 span{color:var(--accent)}
 </div>
 
 </div><!-- #app -->
+
+<!-- Match popup overlay -->
+<div id="match-overlay">
+  <div id="match-card">
+    <div class="mc-ring">⚔️</div>
+    <div class="mc-title">Tìm được đối thủ!</div>
+    <div class="mc-vs">Đối thủ của bạn</div>
+    <div class="mc-opp" id="mc-opp-name">—</div>
+    <a id="mc-join" target="_blank" rel="noopener">🔗 Vào Parsec ngay →</a>
+    <p class="mc-nolink" id="mc-nolink" style="display:none">
+      Chưa có link — liên hệ đối thủ để trao đổi!
+    </p>
+    <button id="mc-close" onclick="closeMatchOverlay()">Đã hiểu</button>
+    <div class="mc-timer" id="mc-timer"></div>
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -485,36 +553,55 @@ function buildCard(p) {
   </div>`;
 }
 
-// ── Match banner helper ────────────────────────────────────────────────────────
+// ── Match overlay ──────────────────────────────────────────────────────────────
+let _matchTimer;
+
 function showMatchBanner(opponentName, link) {
   S.matched = true; S.ready = false;
   haptic('heavy');
   playMatchSound();
   updateSub(); syncMainButton(); updateFallbackBtns();
 
+  // Update persistent banner
   const desc    = document.getElementById('match-desc');
   const btnJoin = document.getElementById('btn-join');
   const nolink  = document.getElementById('match-nolink');
-
   desc.textContent = opponentName ? `⚔️ Đối thủ: ${opponentName}` : '⚔️ Đã ghép trận!';
-
   if (link) {
-    btnJoin.href         = link;
-    btnJoin.style.display = 'inline-block';
-    nolink.style.display  = 'none';
+    btnJoin.href = link; btnJoin.style.display = 'inline-block'; nolink.style.display = 'none';
   } else {
-    btnJoin.style.display = 'none';
-    nolink.style.display  = 'block';
+    btnJoin.style.display = 'none'; nolink.style.display = 'block';
   }
+  document.getElementById('match-banner').style.display = 'block';
 
-  const banner = document.getElementById('match-banner');
-  banner.style.display = 'block';
-  banner.scrollIntoView({behavior:'smooth', block:'center'});
+  // Show fullscreen overlay popup
+  document.getElementById('mc-opp-name').textContent = opponentName || '—';
+  const mcJoin   = document.getElementById('mc-join');
+  const mcNolink = document.getElementById('mc-nolink');
+  if (link) {
+    mcJoin.href = link; mcJoin.style.display = 'block'; mcNolink.style.display = 'none';
+  } else {
+    mcJoin.style.display = 'none'; mcNolink.style.display = 'block';
+  }
+  document.getElementById('match-overlay').classList.add('show');
 
-  const alertMsg = link
-    ? `⚔️ Tìm được đối thủ: ${opponentName}!\nBấm vào link Parsec để vào trận!`
-    : `⚔️ Tìm được đối thủ: ${opponentName}!\nLiên hệ đối thủ để trao đổi link Parsec!`;
-  try { tg?.showAlert(alertMsg); } catch(e){}
+  // Countdown auto-close (8s)
+  let secs = 8;
+  const timerEl = document.getElementById('mc-timer');
+  timerEl.textContent = `Tự đóng sau ${secs}s`;
+  clearInterval(_matchTimer);
+  _matchTimer = setInterval(() => {
+    secs--;
+    if (secs <= 0) { clearInterval(_matchTimer); closeMatchOverlay(); }
+    else timerEl.textContent = `Tự đóng sau ${secs}s`;
+  }, 1000);
+}
+
+function closeMatchOverlay() {
+  clearInterval(_matchTimer);
+  document.getElementById('match-overlay').classList.remove('show');
+  document.getElementById('mc-timer').textContent = '';
+  document.getElementById('match-banner').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 // ── Status poll ────────────────────────────────────────────────────────────────
