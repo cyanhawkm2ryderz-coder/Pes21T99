@@ -411,9 +411,10 @@ async def cb_host_me(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ── /lobby ───────────────────────────────────────────────────────────────────
 
 async def cmd_lobby(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    miniapp_url = "https://t.me/pes21t99bot/lobby"
     if is_group(update):
         kb = InlineKeyboardMarkup([[
-            InlineKeyboardButton("🎮 Mở Lobby", url=WEB_URL)
+            InlineKeyboardButton("🎮 Mở Lobby", url=miniapp_url)
         ]])
     else:
         kb = InlineKeyboardMarkup([[
