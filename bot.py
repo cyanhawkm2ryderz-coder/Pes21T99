@@ -441,7 +441,9 @@ async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    print("[BOT] init_db...", flush=True)
     db.init_db()
+    print(f"[BOT] token={'SET' if BOT_TOKEN else 'MISSING'}", flush=True)
     app = Application.builder().token(BOT_TOKEN).build()
 
     conv = ConversationHandler(
@@ -466,7 +468,7 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_host_them, pattern=r"^host_them:\d+$"))
     app.add_handler(CallbackQueryHandler(cb_host_me,   pattern=r"^host_me:\d+$"))
 
-    print("Bot dang chay...")
+    print("[BOT] Polling started!", flush=True)
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
