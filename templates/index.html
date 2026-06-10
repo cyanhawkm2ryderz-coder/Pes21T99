@@ -2,230 +2,268 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PES Lobby</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{
-  --bg:#07070f;--surface:#0f0f1c;--card:#14142a;--border:#252540;
-  --accent:#00e676;--blue:#4d79ff;--red:#ff4d6d;
-  --text:#e2e2f0;--muted:#55557a;
-  --t1:#ffd700;--t2:#c0c0c0;--t3:#cd7f32;--t4:#4d79ff;--t5:#55557a;
+:root {
+  --bg:      var(--tg-theme-bg-color,           #17212b);
+  --surface: var(--tg-theme-secondary-bg-color, #232e3c);
+  --text:    var(--tg-theme-text-color,         #f5f5f5);
+  --hint:    var(--tg-theme-hint-color,         #708499);
+  --link:    var(--tg-theme-link-color,         #5288c1);
+  --btn:     var(--tg-theme-button-color,       #5288c1);
+  --btn-txt: var(--tg-theme-button-text-color,  #ffffff);
+  --accent: #00e676; --red: #ff4d6d;
+  --border: rgba(255,255,255,.07);
+  --t1:#ffd700;--t2:#c0c0c0;--t3:#cd7f32;--t4:#5288c1;--t5:#708499;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:-apple-system,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+
+/* ── Header ── */
 header{
-  position:sticky;top:0;z-index:100;
-  background:rgba(7,7,15,.9);backdrop-filter:blur(12px);
+  flex-shrink:0;background:var(--surface);
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;
+  display:flex;align-items:center;gap:10px;
   border-bottom:1px solid var(--border);
-  padding:12px 24px;display:flex;align-items:center;gap:12px;
 }
-header h1{font-size:1.15rem;font-weight:700}
+header h1{font-size:1.05rem;font-weight:700;flex:1}
 header h1 span{color:var(--accent)}
-.online-badge{
-  background:rgba(0,230,118,.1);color:var(--accent);
+.badge-online{
+  background:rgba(0,230,118,.12);color:var(--accent);
   border:1px solid rgba(0,230,118,.25);
-  padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:600;
+  padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600
 }
-.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.user-chip{
-  display:flex;align-items:center;gap:8px;
-  background:var(--card);border:1px solid var(--border);
-  padding:5px 14px 5px 10px;border-radius:20px;font-size:.83rem;
-  cursor:pointer;transition:.2s;
+#avatar-btn{
+  display:none;width:30px;height:30px;border-radius:50%;
+  border:none;color:#fff;font-weight:700;font-size:.78rem;
+  cursor:pointer;align-items:center;justify-content:center;
+  touch-action:manipulation;flex-shrink:0
 }
-.user-chip:hover{border-color:var(--accent);color:var(--accent)}
 
-main{max-width:960px;margin:0 auto;padding:24px 16px}
+/* ── Scroll area ── */
+#scroll{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:12px 12px calc(env(safe-area-inset-bottom,0px) + 72px)
+}
 
-/* My panel */
+/* ── My panel ── */
 #my-panel{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:14px;padding:18px 22px;margin-bottom:24px;
-  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  display:none;background:var(--surface);border-radius:14px;
+  padding:12px 14px;margin-bottom:12px;
+  flex-direction:row;align-items:center;gap:12px
 }
-.my-info{flex:1;min-width:140px}
-.my-name{font-weight:700}
-.my-meta{color:var(--muted);font-size:.82rem;margin-top:3px}
-.my-link{font-size:.76rem;color:var(--muted);margin-top:2px;word-break:break-all}
-.my-actions{display:flex;gap:8px;flex-wrap:wrap}
+.my-av{
+  width:42px;height:42px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:1rem;flex-shrink:0;color:#fff
+}
+.my-info{flex:1;min-width:0}
+.my-name{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.my-sub{font-size:.73rem;color:var(--hint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-dot{
+  width:9px;height:9px;border-radius:50%;background:var(--hint);flex-shrink:0
+}
+.status-dot.on{background:var(--accent);animation:pdot 1.5s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
 
-/* Match banner */
+/* ── Match banner ── */
 #match-banner{
-  display:none;
-  background:linear-gradient(135deg,rgba(0,230,118,.12),rgba(77,121,255,.12));
+  display:none;background:linear-gradient(135deg,rgba(0,230,118,.12),rgba(82,136,193,.12));
   border:1px solid var(--accent);border-radius:14px;
-  padding:20px 24px;margin-bottom:24px;text-align:center;
+  padding:16px;margin-bottom:12px;text-align:center
 }
-#match-banner h2{color:var(--accent);margin-bottom:8px;font-size:1.05rem}
-#match-banner p{color:var(--muted);font-size:.87rem;margin-bottom:14px}
+#match-banner h2{color:var(--accent);font-size:.98rem;margin-bottom:6px}
+#match-banner p{color:var(--hint);font-size:.8rem;margin-bottom:12px}
 .btn-join{
   display:inline-block;background:var(--accent);color:#000;
-  font-weight:700;padding:11px 30px;border-radius:10px;
-  text-decoration:none;font-size:.95rem;transition:.2s;
-}
-.btn-join:hover{background:#00ff8a;transform:scale(1.02)}
-
-.section-title{
-  font-size:.76rem;font-weight:600;letter-spacing:1.5px;
-  text-transform:uppercase;color:var(--muted);margin-bottom:14px;
+  font-weight:700;padding:10px 28px;border-radius:10px;
+  text-decoration:none;font-size:.88rem
 }
 
-#lobby{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
-  gap:14px;
+/* ── Section label ── */
+.section-label{
+  font-size:.7rem;font-weight:600;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--hint);
+  margin-bottom:8px;padding:0 2px
 }
-.empty{grid-column:1/-1;text-align:center;padding:56px 0;color:var(--muted)}
-.empty span{display:block;font-size:2.4rem;margin-bottom:10px}
 
+/* ── Lobby ── */
+#lobby{display:flex;flex-direction:column;gap:8px}
+.empty{text-align:center;padding:48px 0;color:var(--hint)}
+.empty span{display:block;font-size:2rem;margin-bottom:8px}
+
+/* ── Card ── */
 .card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:14px;padding:16px;
-  transition:transform .2s,border-color .2s;position:relative;
+  background:var(--surface);border-radius:14px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;
+  transition:opacity .2s
 }
-.card:hover{transform:translateY(-2px);border-color:var(--muted)}
-.card.locked{opacity:.45;pointer-events:none}
-.card.matched-me{border-color:var(--accent)}
-
-.card-name{font-weight:700;font-size:.95rem;margin-bottom:4px}
-.card-ingame{font-size:.76rem;color:var(--muted);font-family:monospace;margin-bottom:10px}
-.card-badges{display:flex;gap:6px;margin-bottom:12px}
-.badge{padding:3px 8px;border-radius:6px;font-size:.7rem;font-weight:700}
-.t1{background:rgba(255,215,0,.14);color:var(--t1)}
-.t2{background:rgba(192,192,192,.14);color:var(--t2)}
-.t3{background:rgba(205,127,50,.14);color:var(--t3)}
-.t4{background:rgba(77,121,255,.14);color:var(--t4)}
-.t5{background:rgba(85,85,122,.14);color:var(--t5)}
-
-.card-actions{display:flex;gap:7px}
-.btn-host{
-  flex:1;padding:7px 0;border-radius:8px;border:1px solid var(--border);
-  background:transparent;color:var(--text);cursor:pointer;
-  font-size:.78rem;font-weight:600;transition:.2s;
+.card.locked{opacity:.4;pointer-events:none}
+.card.matched{border:1px solid var(--accent)}
+.c-av{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:1rem;flex-shrink:0;
+  position:relative;color:#fff
 }
-.btn-host:hover{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn-host.them:hover{background:var(--accent);border-color:var(--accent);color:#000}
-.btn-host:disabled{opacity:.3;cursor:not-allowed}
-.card-matched-content{text-align:center;padding:6px 0}
-.card-matched-content p{font-size:.78rem;color:var(--muted);margin-bottom:10px}
-.btn-parsec{
-  display:inline-block;background:var(--accent);color:#000;
-  font-weight:700;padding:8px 18px;border-radius:8px;
-  text-decoration:none;font-size:.82rem;transition:.2s;
+.c-av .dot{
+  position:absolute;bottom:1px;right:1px;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--surface)
 }
-.btn-parsec:hover{background:#00ff8a}
-
-.pulse{
-  position:absolute;top:12px;right:12px;
-  width:7px;height:7px;border-radius:50%;background:var(--accent);
+.c-info{flex:1;min-width:0}
+.c-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-sub{font-size:.73rem;color:var(--hint);margin-top:3px}
+.tbadge{
+  display:inline-block;padding:1px 6px;border-radius:5px;
+  font-size:.65rem;font-weight:700;margin-right:3px
 }
-.pulse::after{
-  content:'';position:absolute;inset:-4px;border-radius:50%;
-  border:1.5px solid var(--accent);animation:pulse 1.6s ease-out infinite;
+.t1{background:rgba(255,215,0,.15);color:var(--t1)}
+.t2{background:rgba(192,192,192,.15);color:var(--t2)}
+.t3{background:rgba(205,127,50,.15);color:var(--t3)}
+.t4{background:rgba(82,136,193,.15);color:var(--t4)}
+.t5{background:rgba(112,132,153,.15);color:var(--t5)}
+.c-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.btn-h{
+  padding:6px 11px;border-radius:8px;border:1px solid var(--border);
+  background:transparent;font-size:.7rem;font-weight:600;
+  cursor:pointer;touch-action:manipulation;transition:background .1s;
+  white-space:nowrap
 }
-@keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2.8);opacity:0}}
+.btn-h.them{border-color:rgba(0,230,118,.4);color:var(--accent)}
+.btn-h.me{border-color:rgba(82,136,193,.4);color:var(--link)}
+.btn-h:active{opacity:.7;transform:scale(.95)}
 
-.btn{padding:8px 18px;border-radius:9px;border:none;cursor:pointer;font-weight:600;font-size:.84rem;transition:.2s}
-.btn-green{background:var(--accent);color:#000}
-.btn-green:hover{background:#00ff8a}
-.btn-green:disabled{background:#1a3d2b;color:#2a6b47;cursor:not-allowed}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-outline:hover{border-color:var(--red);color:var(--red)}
-.btn-sm{padding:5px 12px;font-size:.78rem}
-
-.modal-overlay{
+/* ── Bottom sheet ── */
+.overlay{
   display:none;position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,.78);backdrop-filter:blur(4px);
-  align-items:center;justify-content:center;
+  background:rgba(0,0,0,.55);align-items:flex-end
 }
-.modal-overlay.open{display:flex}
-.modal{
+.overlay.open{display:flex}
+.sheet{
+  background:var(--bg);border-radius:18px 18px 0 0;
+  padding:0 16px calc(env(safe-area-inset-bottom,0px) + 24px);
+  width:100%;max-height:88vh;overflow-y:auto;
+  animation:sup .25s ease
+}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.handle{
+  width:36px;height:4px;border-radius:2px;
+  background:var(--hint);opacity:.35;
+  margin:10px auto 18px
+}
+.sheet h2{font-size:1rem;font-weight:700;margin-bottom:16px}
+.fgrp{margin-bottom:13px}
+.fgrp label{display:block;font-size:.75rem;color:var(--hint);margin-bottom:4px}
+.fgrp input,.fgrp select{
+  width:100%;padding:11px 13px;border-radius:10px;
   background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;padding:26px;width:min(420px,94vw);
+  color:var(--text);font-size:.88rem;outline:none;
+  -webkit-appearance:none;transition:border-color .15s
 }
-.modal h2{font-size:1.05rem;margin-bottom:18px;color:var(--accent)}
-.form-group{margin-bottom:13px}
-.form-group label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:4px}
-.form-group input,.form-group select{
-  width:100%;padding:9px 11px;border-radius:8px;
-  background:var(--card);border:1px solid var(--border);
-  color:var(--text);font-size:.88rem;outline:none;transition:.2s;
+.fgrp input:focus,.fgrp select:focus{border-color:var(--btn)}
+.fgrp input::placeholder{color:var(--hint)}
+.btn-save{
+  width:100%;padding:13px;border-radius:11px;border:none;
+  background:var(--btn);color:var(--btn-txt);
+  font-weight:700;font-size:.92rem;cursor:pointer;
+  touch-action:manipulation;margin-top:6px
 }
-.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
-.form-group input::placeholder{color:var(--muted)}
-.modal-actions{display:flex;gap:8px;margin-top:18px}
-.modal-actions .btn{flex:1}
+.btn-save:active{opacity:.8}
 
+/* ── Fallback buttons (non-Telegram) ── */
+#fallback-btns{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);
+  background:var(--surface);border-top:1px solid var(--border);
+  gap:8px
+}
+.fbtn{
+  flex:1;padding:12px;border-radius:11px;border:none;
+  font-weight:700;font-size:.88rem;cursor:pointer;touch-action:manipulation
+}
+.fbtn-green{background:var(--accent);color:#000}
+.fbtn-red{background:transparent;border:1px solid var(--red);color:var(--red)}
+
+/* ── Toast ── */
 #toast{
-  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);
-  background:var(--card);border:1px solid var(--border);
-  padding:11px 22px;border-radius:10px;font-size:.86rem;
-  transition:transform .3s;z-index:999;white-space:nowrap;pointer-events:none;
+  position:fixed;bottom:90px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--surface);border:1px solid var(--border);
+  padding:9px 18px;border-radius:20px;font-size:.8rem;
+  opacity:0;transition:opacity .2s,transform .2s;
+  pointer-events:none;z-index:999;white-space:nowrap
 }
-#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.spin{display:inline-block;width:13px;height:13px;border:2px solid transparent;
-  border-top-color:currentColor;border-radius:50%;animation:spin .6s linear infinite;
-  vertical-align:middle;margin-right:5px}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid transparent;
+  border-top-color:currentColor;border-radius:50%;
+  animation:spin .6s linear infinite;vertical-align:middle;margin-right:4px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-@media(max-width:480px){
-  #my-panel{flex-direction:column;align-items:flex-start}
-  .my-actions{width:100%}.my-actions .btn{flex:1}
-}
 </style>
 </head>
 <body>
+<div id="app">
 
 <header>
   <h1>⚽ PES <span>LOBBY</span></h1>
-  <span class="online-badge" id="online-count">🟢 0 online</span>
-  <div class="header-right" id="header-right" style="display:none">
-    <div class="user-chip" onclick="openModal()">✏ <span id="header-name">–</span></div>
-  </div>
+  <span class="badge-online" id="online-count">🟢 0 online</span>
+  <button id="avatar-btn" onclick="openSheet()"></button>
 </header>
 
-<main>
-  <div id="my-panel" style="display:none">
+<div id="scroll">
+
+  <div id="my-panel">
+    <div class="my-av" id="my-av"></div>
     <div class="my-info">
-      <div class="my-name" id="my-name">–</div>
-      <div class="my-meta" id="my-meta">–</div>
-      <div class="my-link" id="my-link"></div>
+      <div class="my-name" id="my-name"></div>
+      <div class="my-sub"  id="my-sub"></div>
     </div>
-    <div class="my-actions">
-      <button class="btn btn-green" id="btn-ready" onclick="toggleReady()">🟢 Tìm đối</button>
-      <button class="btn btn-outline" id="btn-cancel" style="display:none" onclick="cancelReady()">✕ Hủy</button>
-    </div>
+    <div class="status-dot" id="status-dot"></div>
   </div>
 
   <div id="match-banner">
     <h2>⚔️ Trận đấu bắt đầu!</h2>
-    <p id="match-desc">Đối thủ đang host — nhấn để vào Parsec!</p>
-    <a id="btn-join-link" class="btn-join" target="_blank" rel="noopener">🔗 Vào Parsec ngay →</a>
+    <p id="match-desc">Đối thủ đang host — nhấn để vào!</p>
+    <a id="btn-join" class="btn-join" target="_blank" rel="noopener">🔗 Vào Parsec →</a>
   </div>
 
-  <div class="section-title">Đang tìm đối</div>
+  <div class="section-label">Đang tìm đối</div>
   <div id="lobby">
-    <div class="empty"><span>😴</span>Chưa có ai đang tìm đối</div>
+    <div class="empty"><span>😴</span>Chưa có ai tìm đối</div>
   </div>
-</main>
+</div>
+
+<!-- Fallback buttons for non-Telegram browser -->
+<div id="fallback-btns">
+  <button class="fbtn fbtn-green" id="fbtn-ready"  onclick="toggleReady()">🎮 Tìm Đối</button>
+  <button class="fbtn fbtn-red"   id="fbtn-cancel" style="display:none" onclick="cancelReady()">✕ Hủy</button>
+</div>
+
+</div><!-- #app -->
 
 <div id="toast"></div>
 
-<!-- Modal đăng ký / chỉnh sửa hồ sơ -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h2 id="modal-title">👋 Tạo hồ sơ</h2>
-    <div class="form-group">
+<!-- Bottom sheet: register / edit -->
+<div class="overlay" id="sheet-overlay">
+  <div class="sheet" id="sheet">
+    <div class="handle"></div>
+    <h2 id="sheet-title">👋 Tạo hồ sơ</h2>
+    <div class="fgrp">
       <label>Tên hiển thị</label>
       <input id="f-name" placeholder="Tên của bạn" maxlength="30">
     </div>
-    <div class="form-group">
+    <div class="fgrp">
       <label>ID Parsec</label>
       <input id="f-ingame" placeholder="VD: nhimbeti" maxlength="30">
     </div>
-    <div class="form-group">
+    <div class="fgrp">
       <label>Tier</label>
       <select id="f-tier">
         <option value="Tier 1">Tier 1 ⭐⭐⭐⭐⭐</option>
@@ -235,55 +273,81 @@ main{max-width:960px;margin:0 auto;padding:24px 16px}
         <option value="Tier 5">Tier 5 ⭐</option>
       </select>
     </div>
-    <div class="form-group">
-      <label>Link Parsec <small style="color:var(--muted)">(để trống nếu chưa có)</small></label>
-      <input id="f-parsec" placeholder="https://parsec.app/...">
+    <div class="fgrp">
+      <label>Link Parsec <small style="color:var(--hint)">(để trống nếu chưa có)</small></label>
+      <input id="f-parsec" placeholder="https://parsec.gg/...">
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" id="btn-modal-cancel" onclick="closeModal()">Hủy</button>
-      <button class="btn btn-green" onclick="saveProfile()">💾 Lưu</button>
-    </div>
+    <button class="btn-save" onclick="saveProfile()">💾 Lưu hồ sơ</button>
+    <div style="height:8px"></div>
   </div>
 </div>
 
 <script>
+// ── Telegram SDK ───────────────────────────────────────────────────────────────
+const tg     = window.Telegram?.WebApp;
+const tgUser = tg?.initDataUnsafe?.user;
+
+if (tg) {
+  tg.ready();
+  tg.expand();
+  try { tg.setHeaderColor('secondary_bg_color'); } catch(e){}
+  try { tg.enableClosingConfirmation(); } catch(e){}
+}
+
+function haptic(type='light') {
+  try { tg?.HapticFeedback.impactOccurred(type); } catch(e){}
+}
+
+// ── State ──────────────────────────────────────────────────────────────────────
 const TIER_STARS = {'Tier 1':'⭐⭐⭐⭐⭐','Tier 2':'⭐⭐⭐⭐','Tier 3':'⭐⭐⭐','Tier 4':'⭐⭐','Tier 5':'⭐'};
 const TIER_CLASS  = {'Tier 1':'t1','Tier 2':'t2','Tier 3':'t3','Tier 4':'t4','Tier 5':'t5'};
+const AV_COLORS   = ['#ef5350','#e91e63','#9c27b0','#3f51b5','#2196f3','#009688','#4caf50','#ff9800','#ff5722'];
 
-let S = {
-  webId:   localStorage.getItem('pes_id'),
-  profile: null,
-  ready:   false,
-  matched: false,
-};
+let S = { webId: null, profile: null, ready: false, matched: false };
 
+function avColor(name) {
+  let h = 0; for (let c of (name||'')) h = (h*31+c.charCodeAt(0)) % AV_COLORS.length;
+  return AV_COLORS[h];
+}
+function initials(name) {
+  return (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}
+
+// ── API ────────────────────────────────────────────────────────────────────────
 function hdr() {
-  return S.webId ? { 'Content-Type':'application/json','X-Web-Id': S.webId } : { 'Content-Type':'application/json' };
+  return S.webId ? {'Content-Type':'application/json','X-Web-Id':S.webId} : {'Content-Type':'application/json'};
 }
 async function api(path, method='GET', body=null) {
-  const r = await fetch(path, { method, headers: hdr(), body: body ? JSON.stringify(body) : null });
-  return r.json();
+  try {
+    const r = await fetch(path, {method, headers:hdr(), body:body?JSON.stringify(body):null});
+    return r.json();
+  } catch(e) { return {}; }
 }
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
+// ── Boot ───────────────────────────────────────────────────────────────────────
 async function boot() {
+  // Use Telegram user ID if available, else localStorage UUID
+  S.webId = tgUser ? `tg_${tgUser.id}` : localStorage.getItem('pes_id');
+
   if (S.webId) {
     const d = await api('/api/profile');
-    if (d.web_id) {
-      S.profile = d;
-      renderPanel();
-    } else {
-      // ID cũ không còn tồn tại, xóa đi
-      localStorage.removeItem('pes_id');
-      S.webId = null;
-    }
+    if (d.web_id) { S.profile = d; renderPanel(); }
+    else { if (!tgUser) { localStorage.removeItem('pes_id'); S.webId = null; } }
   }
 
-  // Nếu chưa có profile → mở modal đăng ký ngay
   if (!S.profile) {
-    document.getElementById('modal-title').textContent = '👋 Tạo hồ sơ';
-    document.getElementById('btn-modal-cancel').style.display = 'none';
-    openModal();
+    // Auto-fill from Telegram if available
+    if (tgUser) {
+      const fullName = [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ');
+      document.getElementById('f-name').value   = fullName;
+      document.getElementById('f-ingame').value = tgUser.username || '';
+    }
+    openSheet(true);
+  }
+
+  // Show fallback buttons if not in Telegram
+  if (!tg) {
+    document.getElementById('fallback-btns').style.display = 'flex';
   }
 
   await refreshLobby();
@@ -293,193 +357,243 @@ async function boot() {
   setInterval(pingOnline,   10000);
 }
 
-async function pingOnline() {
-  if (!S.webId) return;
-  const d = await api('/api/ping', 'POST', {});
-  if (d.online !== undefined)
-    document.getElementById('online-count').textContent = `🟢 ${d.online} online`;
-}
-
-// ── Panel ─────────────────────────────────────────────────────────────────────
+// ── Panel ──────────────────────────────────────────────────────────────────────
 function renderPanel() {
   const p = S.profile;
   if (!p) return;
-  document.getElementById('my-panel').style.display    = 'flex';
-  document.getElementById('header-right').style.display = 'flex';
-  document.getElementById('header-name').textContent   = p.display_name;
-  document.getElementById('my-name').textContent       = p.display_name;
-  const ts = TIER_STARS[p.tier] || '';
-  document.getElementById('my-meta').textContent = `${ts} ${p.tier}  🎮 ${p.ingame_name}`;
-  document.getElementById('my-link').textContent =
-    p.parsec_link ? `🔗 ${p.parsec_link}` : '🔗 Chưa đặt link Parsec';
+
+  const panel = document.getElementById('my-panel');
+  panel.style.display = 'flex';
+
+  const av = document.getElementById('my-av');
+  av.textContent  = initials(p.display_name);
+  av.style.background = avColor(p.display_name);
+
+  document.getElementById('my-name').textContent = p.display_name;
+
+  const avatarBtn = document.getElementById('avatar-btn');
+  avatarBtn.textContent = initials(p.display_name);
+  avatarBtn.style.background = avColor(p.display_name);
+  avatarBtn.style.display = 'flex';
+
+  updateSub();
+  syncMainButton();
 }
 
-// ── Lobby ─────────────────────────────────────────────────────────────────────
+function updateSub() {
+  const p   = S.profile; if (!p) return;
+  const dot = document.getElementById('status-dot');
+  const sub = document.getElementById('my-sub');
+  const ts  = TIER_STARS[p.tier] || '';
+
+  if (S.ready) {
+    dot.className = 'status-dot on';
+    sub.innerHTML = `<span style="color:var(--accent)">● Đang tìm đối...</span>`;
+  } else {
+    dot.className = 'status-dot';
+    const link = p.parsec_link ? p.parsec_link.replace('https://','').slice(0,28) : 'Chưa có link';
+    sub.textContent = `${ts} ${p.tier} · 🔗 ${link}`;
+  }
+}
+
+// ── MainButton (Telegram native) ───────────────────────────────────────────────
+function syncMainButton() {
+  if (!tg?.MainButton || !S.profile) return;
+  tg.MainButton.offClick(onMainBtn);
+
+  if (S.matched) { tg.MainButton.hide(); return; }
+
+  if (S.ready) {
+    tg.MainButton.setParams({text:'✕ Hủy tìm đối', color:'#c0392b', text_color:'#ffffff'});
+  } else {
+    const c = tg.themeParams.button_color || '#5288c1';
+    const ct = tg.themeParams.button_text_color || '#ffffff';
+    tg.MainButton.setParams({text:'🎮 Tìm Đối', color:c, text_color:ct});
+  }
+  tg.MainButton.show();
+  tg.MainButton.onClick(onMainBtn);
+}
+
+function onMainBtn() {
+  haptic('medium');
+  S.ready ? cancelReady() : toggleReady();
+}
+
+// ── Lobby ──────────────────────────────────────────────────────────────────────
 async function refreshLobby() {
   const players = await api('/api/lobby');
-  const myId    = S.webId;
-  const others  = players.filter(p => p.web_id !== myId);
-  const el = document.getElementById('lobby');
+  const others  = players.filter(p => p.web_id !== S.webId);
+  const el      = document.getElementById('lobby');
+
   if (!others.length) {
-    el.innerHTML = `<div class="empty"><span>😴</span>Chưa có ai đang tìm đối<br>
-      <small style="margin-top:6px;display:block">Nhấn "Tìm đối" để vào hàng chờ!</small></div>`;
+    el.innerHTML = `<div class="empty"><span>😴</span>Chưa có ai tìm đối<br>
+      <small style="margin-top:6px;display:block">Nhấn "Tìm Đối" để vào hàng chờ!</small></div>`;
     return;
   }
   el.innerHTML = others.map(buildCard).join('');
 }
 
 function buildCard(p) {
-  const tc   = TIER_CLASS[p.tier] || 't5';
-  const ts   = TIER_STARS[p.tier] || '';
-  const myId = S.webId;
+  const tc    = TIER_CLASS[p.tier] || 't5';
+  const ts    = TIER_STARS[p.tier] || '';
+  const color = avColor(p.display_name);
+  const ini   = initials(p.display_name);
+  const myId  = S.webId;
 
   if (!p.is_ready && p.matched_with && p.matched_with !== myId) {
     return `<div class="card locked">
-      <div class="card-name">${e(p.display_name)}</div>
-      <div style="color:var(--muted);font-size:.8rem;margin-top:8px">🔒 Đã có đôi</div>
-    </div>`;
-  }
-
-  if (!p.is_ready && p.matched_with === myId && p.match_link) {
-    return `<div class="card matched-me">
-      <div class="card-name">${e(p.display_name)}</div>
-      <div class="card-ingame">🎮 ${e(p.ingame_name)}</div>
-      <div class="card-matched-content">
-        <p>⚔️ Đang host cho bạn!</p>
-        <a class="btn-parsec" href="${e(p.match_link)}" target="_blank" rel="noopener">🔗 Vào Parsec →</a>
+      <div class="c-av" style="background:${color}">${ini}</div>
+      <div class="c-info">
+        <div class="c-name">${e(p.display_name)}</div>
+        <div class="c-sub">🔒 Đã có đôi</div>
       </div>
     </div>`;
   }
 
-  const canConnect = !!S.profile && p.web_id !== S.webId;
+  if (!p.is_ready && p.matched_with === myId && p.match_link) {
+    return `<div class="card matched">
+      <div class="c-av" style="background:${color}">${ini}</div>
+      <div class="c-info">
+        <div class="c-name">${e(p.display_name)}</div>
+        <div class="c-sub">⚔️ Đang host cho bạn!</div>
+      </div>
+      <a class="btn-h them" href="${e(p.match_link)}" target="_blank">🔗 Vào</a>
+    </div>`;
+  }
+
+  const canConnect = !!S.profile && p.web_id !== myId;
   const actions = canConnect
-    ? `<div class="card-actions">
-        <button class="btn-host them" onclick="connect('${p.web_id}','them')">🏠 Host bạn</button>
-        <button class="btn-host"      onclick="connect('${p.web_id}','me')">🏠 Host tôi</button>
+    ? `<div class="c-actions">
+        <button class="btn-h them" onclick="connect('${p.web_id}','them')">Host bạn</button>
+        <button class="btn-h me"   onclick="connect('${p.web_id}','me')">Host tôi</button>
       </div>`
-    : `<div class="card-actions">
-        <button class="btn-host" disabled style="flex:1;font-size:.74rem">⚠️ Đăng ký để kết nối</button>
-      </div>`;
+    : `<div class="c-actions" style="font-size:.7rem;color:var(--hint)">⚠️</div>`;
 
   return `<div class="card">
-    <div class="pulse"></div>
-    <div class="card-name">${e(p.display_name)}</div>
-    <div class="card-ingame">🎮 ${e(p.ingame_name)}</div>
-    <div class="card-badges"><span class="badge ${tc}">${ts} ${p.tier}</span></div>
+    <div class="c-av" style="background:${color}">${ini}<div class="dot"></div></div>
+    <div class="c-info">
+      <div class="c-name">${e(p.display_name)}</div>
+      <div class="c-sub">
+        <span class="tbadge ${tc}">${ts} ${p.tier}</span>
+        ${p.ingame_name ? `🎮 ${e(p.ingame_name)}` : ''}
+      </div>
+    </div>
     ${actions}
   </div>`;
 }
 
-// ── Sound ─────────────────────────────────────────────────────────────────────
-function playMatchSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
-    notes.forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      const t = ctx.currentTime + i * 0.12;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.4, t + 0.02);
-      gain.gain.linearRampToValueAtTime(0, t + 0.18);
-      osc.start(t); osc.stop(t + 0.2);
-    });
-  } catch(e) {}
-}
-
-// ── Status poll ───────────────────────────────────────────────────────────────
+// ── Status poll ────────────────────────────────────────────────────────────────
 async function checkStatus() {
   if (!S.webId || S.matched) return;
   const s = await api('/api/status');
   if (s.matched_with && s.match_link && !S.matched) {
     S.matched = true; S.ready = false;
-    updateReadyBtn();
+    haptic('heavy');
     playMatchSound();
-    document.getElementById('btn-join-link').href = s.match_link;
-    document.getElementById('match-banner').style.display = 'block';
-    document.getElementById('match-banner').scrollIntoView({behavior:'smooth',block:'center'});
+    updateSub(); syncMainButton(); updateFallbackBtns();
+    document.getElementById('btn-join').href = s.match_link;
+    const banner = document.getElementById('match-banner');
+    banner.style.display = 'block';
+    banner.scrollIntoView({behavior:'smooth', block:'center'});
+    // Telegram popup
+    try { tg?.showAlert('⚔️ Tìm được đối thủ! Bấm vào link Parsec để vào trận!'); } catch(e){}
   }
 }
 
-// ── Ready ─────────────────────────────────────────────────────────────────────
+// ── Ready ──────────────────────────────────────────────────────────────────────
 async function toggleReady() {
-  if (!S.profile) { openModal(); return; }
+  if (!S.profile) { openSheet(true); return; }
   if (S.ready) { cancelReady(); return; }
+  haptic('medium');
   S.ready = true; S.matched = false;
   document.getElementById('match-banner').style.display = 'none';
-  updateReadyBtn();
-  await api('/api/ready','POST',{});
+  updateSub(); syncMainButton(); updateFallbackBtns();
+  await api('/api/ready', 'POST', {});
   toast('🟢 Đang tìm đối...');
   refreshLobby();
 }
 
 async function cancelReady() {
-  S.ready = false; updateReadyBtn();
-  await api('/api/cancel','POST',{});
+  haptic('light');
+  S.ready = false;
+  updateSub(); syncMainButton(); updateFallbackBtns();
+  await api('/api/cancel', 'POST', {});
   toast('🔴 Đã hủy');
   refreshLobby();
 }
 
-function updateReadyBtn() {
-  const r = document.getElementById('btn-ready');
-  const c = document.getElementById('btn-cancel');
+function updateFallbackBtns() {
+  const r = document.getElementById('fbtn-ready');
+  const c = document.getElementById('fbtn-cancel');
   if (S.ready) {
     r.innerHTML = '<span class="spin"></span>Đang tìm...'; r.disabled = true;
-    c.style.display = 'inline-block';
+    c.style.display = 'block';
   } else {
-    r.innerHTML = '🟢 Tìm đối'; r.disabled = false;
+    r.innerHTML = '🎮 Tìm Đối'; r.disabled = false;
     c.style.display = 'none';
   }
 }
 
-// ── Connect ───────────────────────────────────────────────────────────────────
+// ── Connect ────────────────────────────────────────────────────────────────────
 async function connect(targetId, host) {
-  if (!S.profile) { openModal(); return; }
+  if (!S.profile) { openSheet(true); return; }
   if (host === 'me' && !S.profile.parsec_link) {
-    toast('⚠️ Bạn chưa đặt link Parsec! Cập nhật hồ sơ.', true);
-    openModal(); return;
+    haptic('heavy');
+    toast('⚠️ Bạn chưa có link Parsec!'); openSheet(); return;
   }
-  const d = await api('/api/connect','POST',{ target_id: targetId, host });
-  if (d.error) { toast('⚠️ ' + d.error, true); refreshLobby(); return; }
+  haptic('medium');
+  const d = await api('/api/connect', 'POST', {target_id: targetId, host});
+  if (d.error) { toast('⚠️ ' + d.error); refreshLobby(); return; }
 
-  if (host === 'them' && d.link) window.open(d.link,'_blank','noopener');
-  toast(host === 'them' ? `✅ Kết nối với ${d.opponent}!` : `✅ Bạn đang host! Chờ ${d.opponent} vào.`);
+  if (host === 'them' && d.link) {
+    // Open Parsec link
+    if (tg) {
+      tg.openLink(d.link);
+    } else {
+      window.open(d.link, '_blank', 'noopener');
+    }
+  }
+  toast(host === 'them' ? `✅ Kết nối với ${d.opponent}!` : `✅ Chờ ${d.opponent} vào Parsec!`);
   S.matched = true; S.ready = false;
-  updateReadyBtn(); refreshLobby();
+  updateSub(); syncMainButton(); refreshLobby();
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
-function openModal() {
+// ── Sheet (bottom sheet) ───────────────────────────────────────────────────────
+function openSheet(required=false) {
   const p = S.profile;
-  document.getElementById('modal-title').textContent = p ? '✏️ Chỉnh hồ sơ' : '👋 Tạo hồ sơ';
-  document.getElementById('btn-modal-cancel').style.display = p ? 'block' : 'none';
+  document.getElementById('sheet-title').textContent = p ? '✏️ Chỉnh hồ sơ' : '👋 Tạo hồ sơ';
   if (p) {
     document.getElementById('f-name').value   = p.display_name || '';
     document.getElementById('f-ingame').value = p.ingame_name  || '';
     document.getElementById('f-tier').value   = p.tier         || 'Tier 3';
     document.getElementById('f-parsec').value = p.parsec_link  || '';
   }
-  document.getElementById('modal').classList.add('open');
+  document.getElementById('sheet-overlay').classList.add('open');
+
+  // Telegram BackButton to close sheet
+  if (tg?.BackButton && !required) {
+    tg.BackButton.show();
+    tg.BackButton.onClick(closeSheet);
+  }
 }
 
-function closeModal() {
-  if (!S.profile) return; // bắt buộc phải điền lần đầu
-  document.getElementById('modal').classList.remove('open');
+function closeSheet() {
+  if (!S.profile) return;
+  document.getElementById('sheet-overlay').classList.remove('open');
+  tg?.BackButton.hide();
 }
 
-document.getElementById('modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal')) closeModal();
+document.getElementById('sheet-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('sheet-overlay')) closeSheet();
 });
 
 async function saveProfile() {
   const name   = document.getElementById('f-name').value.trim();
   const ingame = document.getElementById('f-ingame').value.trim();
-  if (!name || !ingame) { toast('⚠️ Điền đầy đủ tên!', true); return; }
+  if (!name) { toast('⚠️ Nhập tên hiển thị!'); return; }
+  haptic('light');
 
-  const d = await api('/api/register','POST',{
+  const d = await api('/api/register', 'POST', {
     web_id:       S.webId,
     display_name: name,
     ingame_name:  ingame,
@@ -487,24 +601,49 @@ async function saveProfile() {
     parsec_link:  document.getElementById('f-parsec').value.trim(),
   });
 
-  if (d.error) { toast('⚠️ ' + d.error, true); return; }
+  if (d.error) { toast('⚠️ ' + d.error); return; }
   S.webId   = d.web_id;
   S.profile = d.profile;
-  localStorage.setItem('pes_id', d.web_id);
-  document.getElementById('modal').classList.remove('open');
+  if (!tgUser) localStorage.setItem('pes_id', d.web_id);
+  document.getElementById('sheet-overlay').classList.remove('open');
+  tg?.BackButton.hide();
   renderPanel();
-  toast('✅ Hồ sơ đã lưu!');
+  toast('✅ Đã lưu hồ sơ!');
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
+// ── Ping online ────────────────────────────────────────────────────────────────
+async function pingOnline() {
+  if (!S.webId) return;
+  const d = await api('/api/ping', 'POST', {});
+  if (d.online !== undefined)
+    document.getElementById('online-count').textContent = `🟢 ${d.online} online`;
+}
+
+// ── Sound ──────────────────────────────────────────────────────────────────────
+function playMatchSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523,659,784,1047].forEach((freq,i) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.12;
+      gain.gain.setValueAtTime(0,t);
+      gain.gain.linearRampToValueAtTime(0.35, t+.02);
+      gain.gain.linearRampToValueAtTime(0, t+.18);
+      osc.start(t); osc.stop(t+.2);
+    });
+  } catch(e){}
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
 let _tt;
-function toast(msg, err=false) {
+function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
-  el.style.borderColor = err ? 'var(--red)' : 'var(--accent)';
   el.classList.add('show');
   clearTimeout(_tt);
-  _tt = setTimeout(() => el.classList.remove('show'), 3000);
+  _tt = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
 function e(s) {
