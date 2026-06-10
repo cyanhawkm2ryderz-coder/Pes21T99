@@ -411,9 +411,14 @@ async def cb_host_me(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ── /lobby ───────────────────────────────────────────────────────────────────
 
 async def cmd_lobby(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    kb = InlineKeyboardMarkup([[
-        InlineKeyboardButton("🎮 Mở Lobby", web_app=WebAppInfo(url=WEB_URL))
-    ]])
+    if is_group(update):
+        kb = InlineKeyboardMarkup([[
+            InlineKeyboardButton("🎮 Mở Lobby", url=WEB_URL)
+        ]])
+    else:
+        kb = InlineKeyboardMarkup([[
+            InlineKeyboardButton("🎮 Mở Lobby", web_app=WebAppInfo(url=WEB_URL))
+        ]])
     await update.message.reply_text("⚽ Bấm để vào sảnh tìm đối:", reply_markup=kb)
 
 
