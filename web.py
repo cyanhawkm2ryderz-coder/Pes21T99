@@ -15,7 +15,8 @@ app = Flask(__name__)
 BOT_TOKEN     = os.getenv("BOT_TOKEN", "")
 WEBHOOK_URL   = "https://pes21t99.onrender.com/tg_webhook"
 _DB_URL       = os.getenv("DATABASE_URL", "")
-GROUP_CHAT_ID = os.getenv("GROUP_CHAT_ID", "")
+GROUP_CHAT_ID  = os.getenv("GROUP_CHAT_ID", "")
+GROUP_TOPIC_ID = os.getenv("GROUP_TOPIC_ID", "")
 
 # ── Bot event loop ─────────────────────────────────────────────────────────────
 _bot_loop = asyncio.new_event_loop()
@@ -33,15 +34,31 @@ def _async(coro):
 def _fire(coro):
     asyncio.run_coroutine_threadsafe(coro, _bot_loop)
 
-async def _bot_send(chat_id, text):
+async def _bot_send(chat_id, text, reply_markup=None):
     if _bot_app and chat_id:
         try:
-            await _bot_app.bot.send_message(
+            kwargs = dict(
                 chat_id=chat_id, text=text,
                 parse_mode="Markdown", disable_web_page_preview=True
             )
+            if GROUP_TOPIC_ID:
+                kwargs["message_thread_id"] = int(GROUP_TOPIC_ID)
+            if reply_markup:
+                kwargs["reply_markup"] = reply_markup
+            await _bot_app.bot.send_message(**kwargs)
         except Exception as ex:
             print(f"[BOT SEND ERR] {ex}", flush=True)
+
+async def _send_lobby_notify(name):
+    if not _bot_app or not GROUP_CHAT_ID:
+        return
+    from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+    kb = InlineKeyboardMarkup([[
+        InlineKeyboardButton("🎮 Vào Lobby", url="https://t.me/pes21t99bot/lobby")
+    ]])
+    await _bot_send(GROUP_CHAT_ID,
+        f"🔍 *{name}* đang tìm đối — ai đá không?",
+        reply_markup=kb)
 
 async def _notify_subscribers(entering_name, entering_wid):
     conn = get_db()
@@ -385,9 +402,7 @@ def set_ready():
         conn.commit()
     finally:
         conn.close()
-    if GROUP_CHAT_ID:
-        _fire(_bot_send(GROUP_CHAT_ID,
-            f"🎮 *{me['display_name']}* vào lobby tìm đối!"))
+    _fire(_send_lobby_notify(me["display_name"]))
     _fire(_notify_subscribers(me["display_name"], wid))
     return jsonify({"ok": True, "matched": False})
 

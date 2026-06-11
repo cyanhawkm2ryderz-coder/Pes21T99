@@ -413,7 +413,7 @@ async def cb_host_me(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def cmd_lobby(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     miniapp_url = "https://t.me/pes21t99bot/lobby"
     if is_group(update):
-        print(f"[DEBUG] Group chat_id = {update.effective_chat.id}", flush=True)
+        print(f"[DEBUG] Group chat_id={update.effective_chat.id} thread_id={update.message.message_thread_id}", flush=True)
         kb = InlineKeyboardMarkup([[
             InlineKeyboardButton("🎮 Mở Lobby", url=miniapp_url)
         ]])
