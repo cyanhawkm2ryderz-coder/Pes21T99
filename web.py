@@ -56,9 +56,20 @@ async def _send_lobby_notify(name):
     kb = InlineKeyboardMarkup([[
         InlineKeyboardButton("🎮 Vào Lobby", url="https://t.me/pes21t99bot/lobby")
     ]])
-    await _bot_send(GROUP_CHAT_ID,
-        f"*{name}* đang tìm đối, ai vào không!",
-        reply_markup=kb)
+    try:
+        kwargs = dict(
+            chat_id=GROUP_CHAT_ID,
+            text=f"*{name}* đang tìm đối, ai vào không!",
+            parse_mode="Markdown", disable_web_page_preview=True,
+            reply_markup=kb
+        )
+        if GROUP_TOPIC_ID:
+            kwargs["message_thread_id"] = int(GROUP_TOPIC_ID)
+        msg = await _bot_app.bot.send_message(**kwargs)
+        await asyncio.sleep(60)
+        await _bot_app.bot.delete_message(chat_id=GROUP_CHAT_ID, message_id=msg.message_id)
+    except Exception as ex:
+        print(f"[BOT SEND ERR] {ex}", flush=True)
 
 async def _notify_subscribers(entering_name, entering_wid):
     conn = get_db()
