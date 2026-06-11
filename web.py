@@ -376,9 +376,6 @@ def set_ready():
                     )
                     _record_match(cur, wid, me["display_name"], opp["web_id"], opp["display_name"])
                     conn.commit()
-                    if GROUP_CHAT_ID:
-                        _fire(_bot_send(GROUP_CHAT_ID,
-                            f"⚔️ Trận đấu!\n*{me['display_name']}* vs *{opp['display_name']}*"))
                     return jsonify({
                         "ok": True, "matched": True,
                         "opponent": opp["display_name"],
@@ -448,9 +445,6 @@ def connect():
         conn.commit()
     finally:
         conn.close()
-    if GROUP_CHAT_ID:
-        _fire(_bot_send(GROUP_CHAT_ID,
-            f"⚔️ Trận đấu!\n*{me['display_name']}* vs *{target['display_name']}*"))
     return jsonify({"ok": True, "link": link_for_me, "opponent": target["display_name"],
                     "opponent_id": target_wid})
 
