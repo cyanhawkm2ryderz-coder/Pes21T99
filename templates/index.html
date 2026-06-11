@@ -14,130 +14,102 @@
   --link:    var(--tg-theme-link-color,         #5288c1);
   --btn:     var(--tg-theme-button-color,       #5288c1);
   --btn-txt: var(--tg-theme-button-text-color,  #ffffff);
-  --accent: #00e676; --red: #ff4d6d;
-  --border: rgba(255,255,255,.07);
+  --accent:#00e676;--red:#ff4d6d;--border:rgba(255,255,255,.07);
   --t1:#ffd700;--t2:#c0c0c0;--t3:#cd7f32;--t4:#5288c1;--t5:#708499;
+  --nav-h: 56px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
   font-family:-apple-system,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-
 #app{display:flex;flex-direction:column;height:100%;height:100dvh}
 
 /* ── Header ── */
-header{
-  flex-shrink:0;background:var(--surface);
-  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;
-  display:flex;align-items:center;gap:10px;
-  border-bottom:1px solid var(--border);
-}
+header{flex-shrink:0;background:var(--surface);
+  padding:calc(env(safe-area-inset-top,0px)+10px) 14px 10px;
+  display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
 header h1{font-size:1.05rem;font-weight:700;flex:1}
 header h1 span{color:var(--accent)}
-.badge-online{
-  background:rgba(0,230,118,.12);color:var(--accent);
-  border:1px solid rgba(0,230,118,.25);
-  padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600
-}
-#avatar-btn{
-  display:none;width:30px;height:30px;border-radius:50%;
-  border:none;color:#fff;font-weight:700;font-size:.78rem;
-  cursor:pointer;align-items:center;justify-content:center;
-  touch-action:manipulation;flex-shrink:0
-}
-#reload-btn{
-  width:38px;height:38px;border-radius:50%;border:1px solid var(--border);
-  background:transparent;color:var(--text);font-size:1.15rem;
+.badge-online{background:rgba(0,230,118,.12);color:var(--accent);
+  border:1px solid rgba(0,230,118,.25);padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600}
+#reload-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;color:var(--text);font-size:1.1rem;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  touch-action:manipulation;flex-shrink:0;transition:transform .3s
-}
+  touch-action:manipulation;flex-shrink:0;transition:transform .3s}
 #reload-btn.spinning{transform:rotate(360deg)}
+#avatar-btn{display:none;width:30px;height:30px;border-radius:50%;border:none;
+  color:#fff;font-weight:700;font-size:.78rem;cursor:pointer;
+  align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0}
 
-/* ── Scroll area ── */
-#scroll{
-  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:12px 12px calc(env(safe-area-inset-bottom,0px) + 72px)
-}
+/* ── Bottom nav ── */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;
+  height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;align-items:flex-start;z-index:100}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:8px 0;border:none;background:transparent;
+  color:var(--hint);font-size:.6rem;font-weight:600;cursor:pointer;touch-action:manipulation}
+.tab-btn .ti{font-size:1.3rem;transition:transform .15s}
+.tab-btn.active{color:var(--btn)}
+.tab-btn.active .ti{transform:scale(1.15)}
+
+/* ── Scroll ── */
+#scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:12px 12px calc(env(safe-area-inset-bottom,0px) + var(--nav-h) + 8px)}
+
+/* ── Tab panels ── */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 
 /* ── My panel ── */
-#my-panel{
-  display:none;background:var(--surface);border-radius:14px;
-  padding:12px 14px;margin-bottom:12px;
-  flex-direction:row;align-items:center;gap:12px
-}
-.my-av{
-  width:42px;height:42px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:1rem;flex-shrink:0;color:#fff
-}
+#my-panel{display:none;background:var(--surface);border-radius:14px;
+  padding:12px 14px;margin-bottom:10px;flex-direction:row;align-items:center;gap:12px}
+.my-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;color:#fff}
 .my-info{flex:1;min-width:0}
 .my-name{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .my-sub{font-size:.73rem;color:var(--hint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-dot{
-  width:9px;height:9px;border-radius:50%;background:var(--hint);flex-shrink:0
-}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--hint);flex-shrink:0}
 .status-dot.on{background:var(--accent);animation:pdot 1.5s ease-in-out infinite}
 @keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
 
 /* ── Match banner ── */
-#match-banner{
-  display:none;background:linear-gradient(135deg,rgba(0,230,118,.12),rgba(82,136,193,.12));
-  border:1px solid var(--accent);border-radius:14px;
-  padding:16px;margin-bottom:12px;text-align:center
-}
+#match-banner{display:none;background:linear-gradient(135deg,rgba(0,230,118,.12),rgba(82,136,193,.12));
+  border:1px solid var(--accent);border-radius:14px;padding:16px;margin-bottom:10px;text-align:center}
 #match-banner h2{color:var(--accent);font-size:.98rem;margin-bottom:6px}
 #match-banner p{color:var(--hint);font-size:.8rem;margin-bottom:12px}
 .link-row{display:flex;gap:8px;justify-content:center;align-items:center}
-.btn-join{
-  flex:1;display:inline-block;background:var(--accent);color:#000;
+.btn-join{flex:1;display:inline-block;background:var(--accent);color:#000;
   font-weight:700;padding:10px 16px;border-radius:10px;
-  text-decoration:none;font-size:.88rem;text-align:center
-}
-.btn-copy{
-  flex-shrink:0;padding:10px 14px;border-radius:10px;border:none;
-  background:rgba(255,255,255,.1);color:var(--text);
-  font-size:.9rem;cursor:pointer;touch-action:manipulation;
-  transition:background .15s
-}
-.btn-copy:active{background:rgba(255,255,255,.2)}
+  text-decoration:none;font-size:.88rem;text-align:center;border:none;cursor:pointer}
+.btn-copy{flex-shrink:0;padding:10px 14px;border-radius:10px;border:none;
+  background:rgba(255,255,255,.1);color:var(--text);font-size:.9rem;
+  cursor:pointer;touch-action:manipulation}
 
 /* ── Section label ── */
-.section-label{
-  font-size:.7rem;font-weight:600;letter-spacing:1.2px;
-  text-transform:uppercase;color:var(--hint);
-  margin-bottom:8px;padding:0 2px
-}
+.section-label{font-size:.7rem;font-weight:600;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--hint);margin-bottom:8px;padding:0 2px}
 
-/* ── Lobby ── */
+/* ── Lobby list ── */
 #lobby{display:flex;flex-direction:column;gap:8px}
-.empty{text-align:center;padding:48px 0;color:var(--hint)}
+#busy-section{margin-top:14px;display:none}
+#busy-list{display:flex;flex-direction:column;gap:8px}
+.empty{text-align:center;padding:40px 0;color:var(--hint)}
 .empty span{display:block;font-size:2rem;margin-bottom:8px}
 
 /* ── Card ── */
-.card{
-  background:var(--surface);border-radius:14px;padding:12px 14px;
-  display:flex;align-items:center;gap:12px;
-  transition:opacity .2s
-}
+.card{background:var(--surface);border-radius:14px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;transition:opacity .2s}
 .card.locked{opacity:.4;pointer-events:none}
 .card.matched{border:1px solid var(--accent)}
-.c-av{
-  width:44px;height:44px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:1rem;flex-shrink:0;
-  position:relative;color:#fff
-}
-.c-av .dot{
-  position:absolute;bottom:1px;right:1px;
-  width:10px;height:10px;border-radius:50%;
-  background:var(--accent);border:2px solid var(--surface)
-}
+.card.busy-card{border:1px solid rgba(255,77,109,.2)}
+.c-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;position:relative;color:#fff}
+.c-av .dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;
+  border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
 .c-info{flex:1;min-width:0}
 .c-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.c-sub{font-size:.73rem;color:var(--hint);margin-top:3px}
-.tbadge{
-  display:inline-block;padding:1px 6px;border-radius:5px;
-  font-size:.65rem;font-weight:700;margin-right:3px
-}
+.c-sub{font-size:.73rem;color:var(--hint);margin-top:3px;line-height:1.5}
+.tbadge{display:inline-block;padding:1px 6px;border-radius:5px;font-size:.65rem;font-weight:700;margin-right:3px}
 .t1{background:rgba(255,215,0,.15);color:var(--t1)}
 .t2{background:rgba(192,192,192,.15);color:var(--t2)}
 .t3{background:rgba(205,127,50,.15);color:var(--t3)}
@@ -146,182 +118,195 @@ header h1 span{color:var(--accent)}
 .htag{display:inline-block;padding:1px 6px;border-radius:5px;font-size:.65rem;font-weight:700;margin-right:3px}
 .has-host{background:rgba(0,230,118,.12);color:var(--accent)}
 .no-host{background:rgba(255,77,109,.1);color:#ff6b8a}
+.busy-tag{background:rgba(255,77,109,.12);color:var(--red);font-size:.65rem;font-weight:700;
+  padding:1px 6px;border-radius:5px}
+.timer-tag{font-size:.65rem;color:var(--hint);margin-left:2px}
+.c-ingame{cursor:pointer;user-select:none}
+.c-ingame:active{opacity:.6}
 .c-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
-.btn-h{
-  padding:6px 11px;border-radius:8px;border:1px solid var(--border);
+.btn-h{padding:6px 11px;border-radius:8px;border:1px solid var(--border);
   background:transparent;font-size:.7rem;font-weight:600;
-  cursor:pointer;touch-action:manipulation;transition:background .1s;
-  white-space:nowrap
-}
+  cursor:pointer;touch-action:manipulation;white-space:nowrap}
 .btn-h.them{border-color:rgba(0,230,118,.4);color:var(--accent)}
 .btn-h.me{border-color:rgba(82,136,193,.4);color:var(--link)}
 .btn-h:active{opacity:.7;transform:scale(.95)}
 
 /* ── Link bar ── */
-#link-bar{
-  display:none;background:var(--surface);border-radius:12px;
-  padding:10px 14px;margin-bottom:10px;
-}
+#link-bar{display:none;background:var(--surface);border-radius:12px;
+  padding:10px 14px;margin-bottom:10px}
 #link-bar.show{display:block}
-#link-display{
-  display:flex;align-items:center;gap:8px;cursor:pointer;
-  min-height:32px
-}
+#link-display{display:flex;align-items:center;gap:8px;cursor:pointer;min-height:32px}
 #link-display .licon{font-size:.95rem;flex-shrink:0}
-#link-display .ltext{
-  flex:1;font-size:.78rem;color:var(--hint);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
-}
+#link-display .ltext{flex:1;font-size:.78rem;color:var(--hint);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #link-display .ltext.has-link{color:var(--accent)}
 #link-display .ledit{font-size:.75rem;color:var(--hint);flex-shrink:0}
 #link-edit-row{display:none;align-items:center;gap:6px;margin-top:8px}
 #link-edit-row.show{display:flex}
-#link-input{
-  flex:1;padding:8px 10px;border-radius:8px;
-  background:var(--bg);border:1px solid var(--btn);
-  color:var(--text);font-size:.82rem;outline:none
-}
-.lbtn{
-  flex-shrink:0;padding:8px 12px;border-radius:8px;border:none;
-  font-size:.8rem;font-weight:700;cursor:pointer;touch-action:manipulation
-}
+#link-input{flex:1;padding:8px 10px;border-radius:8px;
+  background:var(--bg);border:1px solid var(--btn);color:var(--text);font-size:.82rem;outline:none}
+.lbtn{flex-shrink:0;padding:8px 12px;border-radius:8px;border:none;
+  font-size:.8rem;font-weight:700;cursor:pointer;touch-action:manipulation}
 .lbtn-save{background:var(--btn);color:var(--btn-txt)}
 .lbtn-cancel{background:transparent;color:var(--hint);border:1px solid var(--border)}
 
 /* ── Action row ── */
-#action-row{display:none;gap:8px;margin-bottom:12px}
+#action-row{display:none;gap:8px;margin-bottom:10px}
 #action-row.show{display:flex}
-.btn-act{
-  flex:1;padding:13px 6px;border-radius:12px;border:none;
-  font-weight:700;font-size:.84rem;cursor:pointer;
-  touch-action:manipulation;transition:opacity .15s
-}
+.btn-act{flex:1;padding:13px 6px;border-radius:12px;border:none;
+  font-weight:700;font-size:.84rem;cursor:pointer;touch-action:manipulation;transition:opacity .15s}
 .btn-act:active{opacity:.75}
 .btn-act.manual{background:var(--surface);color:var(--text);border:1px solid var(--border)}
 .btn-act.auto{background:var(--btn);color:var(--btn-txt)}
 .btn-act.cancel{background:transparent;color:var(--red);border:1px solid rgba(255,77,109,.4)}
 
-/* ── Bottom sheet ── */
-.overlay{
-  display:none;position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,.55);align-items:flex-end
-}
+/* ── Schedule tab ── */
+#panel-schedule .sch-add-btn{
+  width:100%;padding:13px;border-radius:12px;border:none;
+  background:var(--btn);color:var(--btn-txt);font-weight:700;font-size:.9rem;
+  cursor:pointer;touch-action:manipulation;margin-bottom:14px}
+.sch-form{background:var(--surface);border-radius:14px;padding:14px;margin-bottom:14px;display:none}
+.sch-form.show{display:block}
+.sch-form .fgrp{margin-bottom:10px}
+.sch-form .fgrp label{display:block;font-size:.75rem;color:var(--hint);margin-bottom:4px}
+.sch-form .fgrp input{width:100%;padding:10px 12px;border-radius:10px;
+  background:var(--bg);border:1px solid var(--border);
+  color:var(--text);font-size:.86rem;outline:none;-webkit-appearance:none}
+.sch-form .fgrp input:focus{border-color:var(--btn)}
+.sch-form-btns{display:flex;gap:8px}
+.sch-form-btns button{flex:1;padding:11px;border-radius:10px;border:none;
+  font-weight:700;font-size:.85rem;cursor:pointer;touch-action:manipulation}
+.sch-save-btn{background:var(--btn);color:var(--btn-txt)}
+.sch-cancel-btn{background:transparent;color:var(--hint);border:1px solid var(--border)}
+.sch-item{background:var(--surface);border-radius:12px;padding:12px 14px;
+  display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sch-time{font-size:.72rem;color:var(--btn);font-weight:700;flex-shrink:0;min-width:70px}
+.sch-info{flex:1;min-width:0}
+.sch-name{font-size:.86rem;font-weight:600;display:block}
+.sch-note{font-size:.75rem;color:var(--hint);display:block;margin-top:2px}
+.sch-del{background:transparent;border:none;color:var(--red);font-size:1rem;
+  cursor:pointer;padding:4px 6px;flex-shrink:0}
+
+/* ── Leaderboard tab ── */
+.lb-item{background:var(--surface);border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.lb-rank{font-size:1.3rem;flex-shrink:0;width:30px;text-align:center}
+.lb-name{flex:1;font-weight:600;font-size:.88rem}
+.lb-count{font-size:.8rem;color:var(--accent);font-weight:700;flex-shrink:0}
+
+/* ── Me tab ── */
+.me-card{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:12px}
+.me-header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.me-av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:1.2rem;flex-shrink:0;color:#fff}
+.me-meta{flex:1}
+.me-display{font-weight:700;font-size:1rem}
+.me-ingame{font-size:.78rem;color:var(--hint);margin-top:3px}
+.me-tier-row{margin-top:6px}
+.stats-row{display:flex;gap:8px}
+.stat-box{flex:1;background:var(--bg);border-radius:10px;padding:10px;text-align:center}
+.stat-val{font-size:1.4rem;font-weight:800;color:var(--accent)}
+.stat-lbl{font-size:.68rem;color:var(--hint);margin-top:2px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:.88rem}
+.toggle-hint{font-size:.72rem;color:var(--hint);margin-top:2px}
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--hint);border-radius:24px;
+  cursor:pointer;transition:background .2s}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;
+  background:#fff;top:3px;left:3px;transition:transform .2s}
+.toggle-switch input:checked + .toggle-slider{background:var(--btn)}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(20px)}
+.edit-profile-btn{width:100%;padding:12px;border-radius:11px;border:1px solid var(--border);
+  background:transparent;color:var(--text);font-size:.88rem;font-weight:600;
+  cursor:pointer;touch-action:manipulation;margin-top:12px}
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--border)}
+.hist-item:last-child{border-bottom:none}
+.hist-vs{font-size:.7rem;color:var(--hint);flex-shrink:0}
+.hist-opp{flex:1;font-size:.86rem;font-weight:600}
+.hist-time{font-size:.7rem;color:var(--hint);flex-shrink:0}
+
+/* ── Overlay (bottom sheet) ── */
+.overlay{display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.55);align-items:flex-end}
 .overlay.open{display:flex}
-.sheet{
-  background:var(--bg);border-radius:18px 18px 0 0;
-  padding:0 16px calc(env(safe-area-inset-bottom,0px) + 24px);
-  width:100%;max-height:88vh;overflow-y:auto;
-  animation:sup .25s ease
-}
+.sheet{background:var(--bg);border-radius:18px 18px 0 0;
+  padding:0 16px calc(env(safe-area-inset-bottom,0px)+24px);
+  width:100%;max-height:88vh;overflow-y:auto;animation:sup .25s ease}
 @keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.handle{
-  width:36px;height:4px;border-radius:2px;
-  background:var(--hint);opacity:.35;
-  margin:10px auto 18px
-}
+.handle{width:36px;height:4px;border-radius:2px;background:var(--hint);
+  opacity:.35;margin:10px auto 18px}
 .sheet h2{font-size:1rem;font-weight:700;margin-bottom:16px}
 .fgrp{margin-bottom:13px}
 .fgrp label{display:block;font-size:.75rem;color:var(--hint);margin-bottom:4px}
-.fgrp input,.fgrp select{
-  width:100%;padding:11px 13px;border-radius:10px;
+.fgrp input,.fgrp select{width:100%;padding:11px 13px;border-radius:10px;
   background:var(--surface);border:1px solid var(--border);
   color:var(--text);font-size:.88rem;outline:none;
-  -webkit-appearance:none;transition:border-color .15s
-}
+  -webkit-appearance:none;transition:border-color .15s}
 .fgrp input:focus,.fgrp select:focus{border-color:var(--btn)}
 .fgrp input::placeholder{color:var(--hint)}
-.btn-save{
-  width:100%;padding:13px;border-radius:11px;border:none;
-  background:var(--btn);color:var(--btn-txt);
-  font-weight:700;font-size:.92rem;cursor:pointer;
-  touch-action:manipulation;margin-top:6px
-}
+.btn-save{width:100%;padding:13px;border-radius:11px;border:none;
+  background:var(--btn);color:var(--btn-txt);font-weight:700;font-size:.92rem;
+  cursor:pointer;touch-action:manipulation;margin-top:6px}
 .btn-save:active{opacity:.8}
 
-/* ── Fallback buttons (non-Telegram) ── */
-#fallback-btns{
-  display:none;
-  position:fixed;bottom:0;left:0;right:0;
-  padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);
-  background:var(--surface);border-top:1px solid var(--border);
-  gap:8px
-}
-.fbtn{
-  flex:1;padding:12px;border-radius:11px;border:none;
-  font-weight:700;font-size:.88rem;cursor:pointer;touch-action:manipulation
-}
-.fbtn-green{background:var(--accent);color:#000}
-.fbtn-red{background:transparent;border:1px solid var(--red);color:var(--red)}
+/* ── Match overlay ── */
+#match-overlay{display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.82);align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#match-overlay.show{display:flex}
+#match-card{background:var(--surface);border:1.5px solid var(--accent);
+  border-radius:22px;padding:28px 20px 20px;text-align:center;
+  width:calc(100% - 40px);max-width:320px;position:relative;
+  animation:mpop .4s cubic-bezier(.175,.885,.32,1.275) both}
+@keyframes mpop{from{transform:scale(.5) translateY(40px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.mc-ring{width:72px;height:72px;border-radius:50%;background:rgba(0,230,118,.12);
+  border:2px solid rgba(0,230,118,.35);display:flex;align-items:center;
+  justify-content:center;font-size:2rem;margin:0 auto 14px;
+  animation:mring 1s .3s ease-in-out infinite alternate}
+@keyframes mring{from{box-shadow:0 0 0 0 rgba(0,230,118,.4)}to{box-shadow:0 0 0 14px rgba(0,230,118,0)}}
+.mc-title{font-size:1.15rem;font-weight:800;color:var(--accent);margin-bottom:4px}
+.mc-vs{font-size:.78rem;color:var(--hint);margin-bottom:4px}
+.mc-opp{font-size:1.05rem;font-weight:700;margin-bottom:16px}
+.mc-nolink{font-size:.78rem;color:var(--hint);margin:8px 0}
+#mc-copy{width:100%;padding:12px 0;border-radius:11px;border:none;
+  background:var(--accent);color:#000;font-weight:800;font-size:.92rem;
+  cursor:pointer;touch-action:manipulation}
+#mc-copy:active{opacity:.8}
+.mc-link-row{display:block;margin-bottom:8px}
+.mc-rating{margin:10px 0 0}
+.mc-rating-lbl{font-size:.75rem;color:var(--hint);margin-bottom:7px}
+.mc-rating-btns{display:flex;gap:8px;justify-content:center}
+.mc-rate-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;font-size:1.3rem;cursor:pointer;touch-action:manipulation;
+  transition:background .15s}
+.mc-rate-btn:active{transform:scale(.92)}
+.mc-rate-btn.rated-up{background:rgba(0,230,118,.15);border-color:var(--accent)}
+.mc-rate-btn.rated-down{background:rgba(255,77,109,.15);border-color:var(--red)}
+#mc-rematch{margin-top:8px;width:100%;padding:11px;border-radius:11px;border:none;
+  background:rgba(82,136,193,.15);color:var(--link);
+  font-size:.85rem;font-weight:700;cursor:pointer;touch-action:manipulation}
+#mc-close{margin-top:8px;width:100%;padding:11px;border-radius:11px;
+  border:1px solid var(--border);background:transparent;color:var(--hint);
+  font-size:.85rem;cursor:pointer;touch-action:manipulation}
+.mc-timer{font-size:.68rem;color:var(--hint);margin-top:8px}
 
 /* ── Toast ── */
-#toast{
-  position:fixed;bottom:90px;left:50%;
-  transform:translateX(-50%) translateY(10px);
+#toast{position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);
+  left:50%;transform:translateX(-50%) translateY(10px);
   background:var(--surface);border:1px solid var(--border);
   padding:9px 18px;border-radius:20px;font-size:.8rem;
-  opacity:0;transition:opacity .2s,transform .2s;
-  pointer-events:none;z-index:999;white-space:nowrap
-}
+  opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 .spin{display:inline-block;width:12px;height:12px;border:2px solid transparent;
   border-top-color:currentColor;border-radius:50%;
   animation:spin .6s linear infinite;vertical-align:middle;margin-right:4px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── Match overlay ── */
-#match-overlay{
-  display:none;position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,.82);
-  align-items:center;justify-content:center;
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)
-}
-#match-overlay.show{display:flex}
-
-#match-card{
-  background:var(--surface);
-  border:1.5px solid var(--accent);
-  border-radius:22px;
-  padding:32px 24px 24px;
-  text-align:center;
-  width:calc(100% - 40px);
-  max-width:320px;
-  position:relative;
-  animation:mpop .4s cubic-bezier(.175,.885,.32,1.275) both
-}
-@keyframes mpop{from{transform:scale(.5) translateY(40px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
-
-.mc-ring{
-  width:80px;height:80px;border-radius:50%;
-  background:rgba(0,230,118,.12);
-  border:2px solid rgba(0,230,118,.35);
-  display:flex;align-items:center;justify-content:center;
-  font-size:2.2rem;margin:0 auto 16px;
-  animation:mring 1s .3s ease-in-out infinite alternate
-}
-@keyframes mring{from{box-shadow:0 0 0 0 rgba(0,230,118,.4)}to{box-shadow:0 0 0 14px rgba(0,230,118,0)}}
-
-.mc-title{font-size:1.2rem;font-weight:800;color:var(--accent);margin-bottom:6px}
-.mc-vs{font-size:.8rem;color:var(--hint);margin-bottom:4px}
-.mc-opp{font-size:1.1rem;font-weight:700;margin-bottom:20px}
-.mc-nolink{font-size:.78rem;color:var(--hint);margin:10px 0 0}
-
-#mc-copy{
-  width:100%;padding:13px 0;border-radius:12px;border:none;
-  background:var(--accent);color:#000;
-  font-weight:800;font-size:.95rem;cursor:pointer;touch-action:manipulation
-}
-#mc-copy:active{opacity:.8}
-.mc-link-row{display:block}
-#mc-close{
-  margin-top:11px;width:100%;padding:11px;
-  border-radius:12px;border:1px solid var(--border);
-  background:transparent;color:var(--hint);
-  font-size:.85rem;cursor:pointer;touch-action:manipulation
-}
-.mc-timer{
-  font-size:.68rem;color:var(--hint);margin-top:8px
-}
 </style>
 </head>
 <body>
@@ -336,61 +321,158 @@ header h1 span{color:var(--accent)}
 
 <div id="scroll">
 
-  <div id="my-panel">
-    <div class="my-av" id="my-av"></div>
-    <div class="my-info">
-      <div class="my-name" id="my-name"></div>
-      <div class="my-sub"  id="my-sub"></div>
+  <!-- ══ TAB: LOBBY ══ -->
+  <div id="panel-lobby" class="tab-panel active">
+
+    <div id="my-panel">
+      <div class="my-av" id="my-av"></div>
+      <div class="my-info">
+        <div class="my-name" id="my-name"></div>
+        <div class="my-sub"  id="my-sub"></div>
+      </div>
+      <div class="status-dot" id="status-dot"></div>
     </div>
-    <div class="status-dot" id="status-dot"></div>
-  </div>
 
-  <!-- Parsec link bar -->
-  <div id="link-bar">
-    <div id="link-display" onclick="toggleLinkEdit()">
-      <span class="licon">🔗</span>
-      <span class="ltext" id="link-text">Chưa có link Parsec — nhấn để thêm</span>
-      <span class="ledit">✏️</span>
+    <div id="link-bar">
+      <div id="link-display" onclick="toggleLinkEdit()">
+        <span class="licon">🔗</span>
+        <span class="ltext" id="link-text">Chưa có link Parsec — nhấn để thêm</span>
+        <span class="ledit">✏️</span>
+      </div>
+      <div id="link-edit-row">
+        <input id="link-input" placeholder="https://parsec.gg/..." type="url" autocomplete="off"
+               onkeydown="if(event.key==='Enter')saveLink()">
+        <button class="lbtn lbtn-save"   onclick="saveLink()">✓</button>
+        <button class="lbtn lbtn-cancel" onclick="closeLinkEdit()">✗</button>
+      </div>
     </div>
-    <div id="link-edit-row">
-      <input id="link-input" placeholder="https://parsec.gg/..." type="url" autocomplete="off"
-             onkeydown="if(event.key==='Enter')saveLink()">
-      <button class="lbtn lbtn-save"   onclick="saveLink()">✓ Lưu</button>
-      <button class="lbtn lbtn-cancel" onclick="closeLinkEdit()">✗</button>
+
+    <div id="action-row">
+      <button class="btn-act manual" id="btn-lobby"   onclick="doReady(false)">📋 Danh sách chờ</button>
+      <button class="btn-act auto"   id="btn-auto"    onclick="doReady(true)">🎲 Ghép Random</button>
+      <button class="btn-act cancel" id="btn-cancel2" style="display:none" onclick="cancelReady()">✕ Hủy</button>
+    </div>
+
+    <div id="match-banner">
+      <h2>⚔️ Ghép trận thành công!</h2>
+      <p id="match-desc"></p>
+      <div class="link-row" id="banner-link-row" style="display:none">
+        <button class="btn-join" onclick="copyLink('banner')">📋 Copy Link Parsec</button>
+      </div>
+      <p id="match-nolink" style="display:none;color:var(--hint);font-size:.8rem;margin-top:8px">
+        Chưa có link — liên hệ đối thủ để trao đổi!
+      </p>
+    </div>
+
+    <div class="section-label">Đang tìm đối</div>
+    <div id="lobby">
+      <div class="empty"><span>😴</span>Chưa có ai tìm đối</div>
+    </div>
+
+    <div id="busy-section">
+      <div class="section-label" style="margin-top:6px">Đang đấu</div>
+      <div id="busy-list"></div>
+    </div>
+
+  </div><!-- /panel-lobby -->
+
+  <!-- ══ TAB: LỊCH ══ -->
+  <div id="panel-schedule" class="tab-panel">
+    <button class="sch-add-btn" onclick="toggleSchForm()">📅 Thêm lịch online</button>
+    <div class="sch-form" id="sch-form">
+      <div class="fgrp">
+        <label>Thời gian</label>
+        <input type="datetime-local" id="sch-time">
+      </div>
+      <div class="fgrp">
+        <label>Ghi chú <small style="color:var(--hint)">(tùy chọn)</small></label>
+        <input id="sch-note" placeholder="VD: tối nay rảnh từ 8h" maxlength="80">
+      </div>
+      <div class="sch-form-btns">
+        <button class="sch-save-btn"   onclick="saveSchedule()">💾 Lưu</button>
+        <button class="sch-cancel-btn" onclick="toggleSchForm()">Hủy</button>
+      </div>
+    </div>
+    <div class="section-label">Lịch online sắp tới</div>
+    <div id="sch-list">
+      <div class="empty"><span>📅</span>Chưa có lịch nào</div>
     </div>
   </div>
 
-  <!-- Action buttons -->
-  <div id="action-row">
-    <button class="btn-act manual" id="btn-lobby"  onclick="doReady(false)">📋 Danh sách chờ</button>
-    <button class="btn-act auto"   id="btn-auto"   onclick="doReady(true)">🎲 Ghép Random</button>
-    <button class="btn-act cancel" id="btn-cancel2" style="display:none" onclick="cancelReady()">✕ Hủy</button>
-  </div>
-
-  <div id="match-banner">
-    <h2>⚔️ Ghép trận thành công!</h2>
-    <p id="match-desc"></p>
-    <div class="link-row" id="banner-link-row" style="display:none">
-      <button class="btn-join" onclick="copyLink('banner')">📋 Copy Link Parsec</button>
+  <!-- ══ TAB: BXH ══ -->
+  <div id="panel-leaderboard" class="tab-panel">
+    <div class="section-label">Top 10 nhiều trận nhất</div>
+    <div id="lb-list">
+      <div class="empty"><span>🏆</span>Chưa có dữ liệu</div>
     </div>
-    <p id="match-nolink" style="display:none;color:var(--hint);font-size:.8rem;margin-top:8px">
-      Chưa có link Parsec — liên hệ đối thủ để trao đổi link!
-    </p>
   </div>
 
-  <div class="section-label">Đang tìm đối</div>
-  <div id="lobby">
-    <div class="empty"><span>😴</span>Chưa có ai tìm đối</div>
+  <!-- ══ TAB: TÔI ══ -->
+  <div id="panel-me" class="tab-panel">
+    <div class="me-card" id="me-profile-card">
+      <div class="me-header">
+        <div class="me-av" id="me-av-big"></div>
+        <div class="me-meta">
+          <div class="me-display" id="me-display-name">—</div>
+          <div class="me-ingame"  id="me-ingame-name"></div>
+          <div class="me-tier-row" id="me-tier-row"></div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" id="stat-matches">0</div>
+          <div class="stat-lbl">trận đã đấu</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-up" style="color:#00e676">0 👍</div>
+          <div class="stat-lbl">khen ngợi</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-down" style="color:#ff4d6d">0 👎</div>
+          <div class="stat-lbl">phê bình</div>
+        </div>
+      </div>
+      <button class="edit-profile-btn" onclick="openSheet()">✏️ Chỉnh hồ sơ</button>
+    </div>
+
+    <div class="me-card">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">🔔 Thông báo khi có người vào lobby</div>
+          <div class="toggle-hint">Bot Telegram sẽ nhắn tin cho bạn</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="notify-toggle" onchange="toggleNotify(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="me-card" id="history-card">
+      <div class="section-label" style="margin-bottom:10px">Lịch sử trận đấu</div>
+      <div id="history-list">
+        <div class="empty" style="padding:20px 0"><span>⚔️</span>Chưa có trận nào</div>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- Fallback buttons for non-Telegram browser -->
-<div id="fallback-btns">
-  <button class="fbtn fbtn-green" id="fbtn-ready"  onclick="doReady(false)" style="flex:1">📋 Danh sách chờ</button>
-  <button class="fbtn fbtn-red"   id="fbtn-cancel" style="display:none;flex:1" onclick="cancelReady()">✕ Hủy</button>
-</div>
+</div><!-- #scroll -->
 
-</div><!-- #app -->
+<!-- Bottom nav -->
+<nav id="bottom-nav">
+  <button class="tab-btn active" data-tab="lobby"       onclick="switchTab('lobby')">
+    <span class="ti">🏠</span>Lobby
+  </button>
+  <button class="tab-btn" data-tab="schedule"    onclick="switchTab('schedule')">
+    <span class="ti">📅</span>Lịch
+  </button>
+  <button class="tab-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+    <span class="ti">🏆</span>BXH
+  </button>
+  <button class="tab-btn" data-tab="me"          onclick="switchTab('me')">
+    <span class="ti">👤</span>Tôi
+  </button>
+</nav>
 
 <!-- Match popup overlay -->
 <div id="match-overlay">
@@ -405,6 +487,14 @@ header h1 span{color:var(--accent)}
     <p class="mc-nolink" id="mc-nolink" style="display:none">
       Chưa có link — liên hệ đối thủ để trao đổi!
     </p>
+    <div class="mc-rating" id="mc-rating" style="display:none">
+      <div class="mc-rating-lbl">Đánh giá đối thủ:</div>
+      <div class="mc-rating-btns">
+        <button class="mc-rate-btn" id="btn-rate-up"   onclick="rateOpponent('up')">👍</button>
+        <button class="mc-rate-btn" id="btn-rate-down" onclick="rateOpponent('down')">👎</button>
+      </div>
+    </div>
+    <button id="mc-rematch" style="display:none" onclick="sendRematch()">🔁 Thách đấu lại</button>
     <button id="mc-close" onclick="closeMatchOverlay()">Đã hiểu</button>
     <div class="mc-timer" id="mc-timer"></div>
   </div>
@@ -422,7 +512,7 @@ header h1 span{color:var(--accent)}
       <input id="f-name" placeholder="Tên của bạn" maxlength="30">
     </div>
     <div class="fgrp">
-      <label>ID Parsec</label>
+      <label>ID Parsec (ingame name)</label>
       <input id="f-ingame" placeholder="VD: nhimbeti" maxlength="30">
     </div>
     <div class="fgrp">
@@ -450,30 +540,27 @@ const tg     = window.Telegram?.WebApp;
 const tgUser = tg?.initDataUnsafe?.user;
 
 if (tg) {
-  tg.ready();
-  tg.expand();
+  tg.ready(); tg.expand();
   try { tg.setHeaderColor('secondary_bg_color'); } catch(e){}
   try { tg.enableClosingConfirmation(); } catch(e){}
 }
 
-function haptic(type='light') {
-  try { tg?.HapticFeedback.impactOccurred(type); } catch(e){}
-}
+function haptic(t='light') { try { tg?.HapticFeedback.impactOccurred(t); } catch(e){} }
 
 // ── State ──────────────────────────────────────────────────────────────────────
 const TIER_STARS = {'Tier 1':'⭐⭐⭐⭐⭐','Tier 2':'⭐⭐⭐⭐','Tier 3':'⭐⭐⭐','Tier 4':'⭐⭐','Tier 5':'⭐'};
-const TIER_CLASS  = {'Tier 1':'t1','Tier 2':'t2','Tier 3':'t3','Tier 4':'t4','Tier 5':'t5'};
-const AV_COLORS   = ['#ef5350','#e91e63','#9c27b0','#3f51b5','#2196f3','#009688','#4caf50','#ff9800','#ff5722'];
+const TIER_CLASS = {'Tier 1':'t1','Tier 2':'t2','Tier 3':'t3','Tier 4':'t4','Tier 5':'t5'};
+const AV_COLORS  = ['#ef5350','#e91e63','#9c27b0','#3f51b5','#2196f3','#009688','#4caf50','#ff9800','#ff5722'];
 
 let S = { webId: null, profile: null, ready: false, matched: false };
+let _currentOpponentId = null;
+let _rated = false;
 
-function avColor(name) {
-  let h = 0; for (let c of (name||'')) h = (h*31+c.charCodeAt(0)) % AV_COLORS.length;
+function avColor(n) {
+  let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))%AV_COLORS.length;
   return AV_COLORS[h];
 }
-function initials(name) {
-  return (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-}
+function initials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
 
 // ── API ────────────────────────────────────────────────────────────────────────
 function hdr() {
@@ -486,9 +573,22 @@ async function api(path, method='GET', body=null) {
   } catch(e) { return {}; }
 }
 
+// ── Tab switch ─────────────────────────────────────────────────────────────────
+let activeTab = 'lobby';
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+  haptic('light');
+  if (tab === 'leaderboard') loadLeaderboard();
+  if (tab === 'me')          loadMe();
+  if (tab === 'schedule')    loadSchedules();
+}
+
 // ── Boot ───────────────────────────────────────────────────────────────────────
 async function boot() {
-  // Use Telegram user ID if available, else localStorage UUID
   S.webId = tgUser ? `tg_${tgUser.id}` : localStorage.getItem('pes_id');
 
   if (S.webId) {
@@ -498,18 +598,12 @@ async function boot() {
   }
 
   if (!S.profile) {
-    // Auto-fill from Telegram if available
     if (tgUser) {
       const fullName = [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ');
       document.getElementById('f-name').value   = fullName;
       document.getElementById('f-ingame').value = tgUser.username || '';
     }
     openSheet(true);
-  }
-
-  // Show fallback buttons if not in Telegram
-  if (!tg) {
-    document.getElementById('fallback-btns').style.display = 'flex';
   }
 
   await refreshLobby();
@@ -521,52 +615,37 @@ async function boot() {
 
 // ── Panel ──────────────────────────────────────────────────────────────────────
 function renderPanel() {
-  const p = S.profile;
-  if (!p) return;
-
-  const panel = document.getElementById('my-panel');
-  panel.style.display = 'flex';
-
+  const p = S.profile; if (!p) return;
+  document.getElementById('my-panel').style.display = 'flex';
   const av = document.getElementById('my-av');
-  av.textContent  = initials(p.display_name);
+  av.textContent = initials(p.display_name);
   av.style.background = avColor(p.display_name);
-
-  document.getElementById('my-name').textContent = p.display_name;
-
-  const avatarBtn = document.getElementById('avatar-btn');
-  avatarBtn.textContent = initials(p.display_name);
-  avatarBtn.style.background = avColor(p.display_name);
-  avatarBtn.style.display = 'flex';
-
-  updateSub();
-  syncMainButton();
-  updateActionRow();
-  renderLinkBar();
+  const ab = document.getElementById('avatar-btn');
+  ab.textContent = initials(p.display_name);
+  ab.style.background = avColor(p.display_name);
+  ab.style.display = 'flex';
+  updateSub(); syncMainButton(); updateActionRow(); renderLinkBar();
 }
 
 function updateSub() {
-  const p   = S.profile; if (!p) return;
+  const p = S.profile; if (!p) return;
   const dot = document.getElementById('status-dot');
   const sub = document.getElementById('my-sub');
-  const ts  = TIER_STARS[p.tier] || '';
-
   if (S.ready) {
     dot.className = 'status-dot on';
     sub.innerHTML = `<span style="color:var(--accent)">● Đang tìm đối...</span>`;
   } else {
     dot.className = 'status-dot';
     const link = p.parsec_link ? p.parsec_link.replace('https://','').slice(0,28) : 'Chưa có link';
-    sub.textContent = `${ts} ${p.tier} · 🔗 ${link}`;
+    sub.textContent = `${TIER_STARS[p.tier]||''} ${p.tier} · 🔗 ${link}`;
   }
 }
 
-// ── MainButton (Telegram native — ⚡ Tự Ghép as primary) ────────────────────────
+// ── MainButton ─────────────────────────────────────────────────────────────────
 function syncMainButton() {
   if (!tg?.MainButton || !S.profile) return;
   tg.MainButton.offClick(onMainBtn);
-
   if (S.matched) { tg.MainButton.hide(); return; }
-
   if (S.ready) {
     tg.MainButton.setParams({text:'✕ Hủy', color:'#c0392b', text_color:'#ffffff'});
   } else {
@@ -577,24 +656,38 @@ function syncMainButton() {
   tg.MainButton.show();
   tg.MainButton.onClick(onMainBtn);
 }
-
-function onMainBtn() {
-  haptic('medium');
-  S.ready ? cancelReady() : doReady(true);
-}
+function onMainBtn() { haptic('medium'); S.ready ? cancelReady() : doReady(true); }
 
 // ── Lobby ──────────────────────────────────────────────────────────────────────
 async function refreshLobby() {
   const players = await api('/api/lobby');
-  const others  = players.filter(p => p.web_id !== S.webId);
-  const el      = document.getElementById('lobby');
-
-  if (!others.length) {
+  const waiting = players.filter(p => p.web_id !== S.webId && p.is_ready);
+  const busy    = players.filter(p => p.web_id !== S.webId && !p.is_ready && p.status === 'busy');
+  const el = document.getElementById('lobby');
+  if (!waiting.length) {
     el.innerHTML = `<div class="empty"><span>😴</span>Chưa có ai tìm đối<br>
       <small style="margin-top:6px;display:block">Nhấn "Tìm Đối" để vào hàng chờ!</small></div>`;
-    return;
+  } else {
+    el.innerHTML = waiting.map(buildCard).join('');
   }
-  el.innerHTML = others.map(buildCard).join('');
+  const busySec  = document.getElementById('busy-section');
+  const busyList = document.getElementById('busy-list');
+  if (busy.length) {
+    busySec.style.display = 'block';
+    busyList.innerHTML = busy.map(buildBusyCard).join('');
+  } else {
+    busySec.style.display = 'none';
+  }
+}
+
+function waitingTime(updatedAt) {
+  if (!updatedAt) return '';
+  const ms  = Date.now() - new Date(updatedAt + 'Z').getTime();
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return '<1p';
+  if (min < 60) return `${min}p`;
+  const h = Math.floor(min/60);
+  return `${h}g${min%60>0?min%60+'p':''}`;
 }
 
 function buildCard(p) {
@@ -603,6 +696,7 @@ function buildCard(p) {
   const color = avColor(p.display_name);
   const ini   = initials(p.display_name);
   const myId  = S.webId;
+  const wt    = waitingTime(p.updated_at);
 
   if (!p.is_ready && p.matched_with && p.matched_with !== myId) {
     return `<div class="card locked">
@@ -610,10 +704,8 @@ function buildCard(p) {
       <div class="c-info">
         <div class="c-name">${e(p.display_name)}</div>
         <div class="c-sub">🔒 Đã có đôi</div>
-      </div>
-    </div>`;
+      </div></div>`;
   }
-
   if (!p.is_ready && p.matched_with === myId && p.match_link) {
     return `<div class="card matched">
       <div class="c-av" style="background:${color}">${ini}</div>
@@ -626,17 +718,21 @@ function buildCard(p) {
   }
 
   const canConnect = !!S.profile && p.web_id !== myId;
-  const tLink = (p.parsec_link || '').replace(/'/g, "\\'");
+  const tLink = (p.parsec_link || '').replace(/'/g,"\\'");
   const actions = canConnect
     ? `<div class="c-actions">
         <button class="btn-h them" onclick="connect('${p.web_id}','them','${tLink}')">Host bạn</button>
         <button class="btn-h me"   onclick="connect('${p.web_id}','me','${tLink}')">Host tôi</button>
-      </div>`
+       </div>`
     : `<div class="c-actions" style="font-size:.7rem;color:var(--hint)">⚠️</div>`;
 
   const hostTag = p.parsec_link
     ? `<span class="htag has-host">✅ Có Host</span>`
     : `<span class="htag no-host">🚫 No Host</span>`;
+
+  const igLine = p.ingame_name
+    ? `<br><span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID">🎮 ${e(p.ingame_name)} 📋</span>`
+    : '';
 
   return `<div class="card">
     <div class="c-av" style="background:${color}">${ini}<div class="dot"></div></div>
@@ -645,52 +741,79 @@ function buildCard(p) {
       <div class="c-sub">
         <span class="tbadge ${tc}">${ts} ${p.tier}</span>
         ${hostTag}
-        ${p.ingame_name ? `<br>🎮 ${e(p.ingame_name)}` : ''}
+        ${wt ? `<span class="timer-tag">⏳${wt}</span>` : ''}
+        ${igLine}
       </div>
     </div>
     ${actions}
   </div>`;
 }
 
+function buildBusyCard(p) {
+  const color = avColor(p.display_name);
+  const ini   = initials(p.display_name);
+  return `<div class="card busy-card">
+    <div class="c-av" style="background:${color}">${ini}</div>
+    <div class="c-info">
+      <div class="c-name">${e(p.display_name)}</div>
+      <div class="c-sub"><span class="busy-tag">🔴 Đang đấu</span></div>
+    </div>
+  </div>`;
+}
+
+function copyIngame(name) {
+  navigator.clipboard?.writeText(name).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = name; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+  });
+  haptic('light');
+  toast(`📋 Đã copy: ${name}`);
+}
+
 // ── Match overlay ──────────────────────────────────────────────────────────────
 let _matchTimer;
 
-function showMatchBanner(opponentName, link) {
-  S.matched = true; S.ready = false;
-  haptic('heavy');
-  playMatchSound();
-  updateSub(); syncMainButton(); updateFallbackBtns();
+function showMatchBanner(opponentName, link, opponentId) {
+  S.matched = true; S.ready = false; _rated = false;
+  _currentOpponentId = opponentId || null;
+  haptic('heavy'); playMatchSound();
+  updateSub(); syncMainButton(); updateActionRow();
 
-  // Update persistent banner
-  const desc    = document.getElementById('match-desc');
-  const nolink  = document.getElementById('match-nolink');
+  const desc     = document.getElementById('match-desc');
+  const nolink   = document.getElementById('match-nolink');
   const bannerRow = document.getElementById('banner-link-row');
   desc.textContent = opponentName ? `⚔️ Đối thủ: ${opponentName}` : '⚔️ Đã ghép trận!';
   if (link) {
-    bannerRow.style.display = 'flex';
-    bannerRow.dataset.link  = link;
-    nolink.style.display    = 'none';
+    bannerRow.style.display = 'flex'; bannerRow.dataset.link = link;
+    nolink.style.display = 'none';
   } else {
-    bannerRow.style.display = 'none';
-    nolink.style.display    = 'block';
+    bannerRow.style.display = 'none'; nolink.style.display = 'block';
   }
   document.getElementById('match-banner').style.display = 'block';
 
-  // Show fullscreen overlay popup
   document.getElementById('mc-opp-name').textContent = opponentName || '—';
   const mcLinkRow = document.getElementById('mc-link-row');
   const mcNolink  = document.getElementById('mc-nolink');
   if (link) {
-    mcLinkRow.style.display = 'block';
-    mcLinkRow.dataset.link  = link;
-    mcNolink.style.display  = 'none';
+    mcLinkRow.style.display = 'block'; mcLinkRow.dataset.link = link;
+    mcNolink.style.display = 'none';
   } else {
-    mcLinkRow.style.display = 'none';
-    mcNolink.style.display  = 'block';
+    mcLinkRow.style.display = 'none'; mcNolink.style.display = 'block';
   }
+
+  const ratingEl  = document.getElementById('mc-rating');
+  const rematchEl = document.getElementById('mc-rematch');
+  if (opponentId) {
+    ratingEl.style.display = 'block'; rematchEl.style.display = 'block';
+    document.getElementById('btn-rate-up').className   = 'mc-rate-btn';
+    document.getElementById('btn-rate-down').className = 'mc-rate-btn';
+  } else {
+    ratingEl.style.display = 'none'; rematchEl.style.display = 'none';
+  }
+
   document.getElementById('match-overlay').classList.add('show');
 
-  // Countdown auto-close (8s)
   let secs = 8;
   const timerEl = document.getElementById('mc-timer');
   timerEl.textContent = `Tự đóng sau ${secs}s`;
@@ -706,7 +829,23 @@ function closeMatchOverlay() {
   clearInterval(_matchTimer);
   document.getElementById('match-overlay').classList.remove('show');
   document.getElementById('mc-timer').textContent = '';
-  document.getElementById('match-banner').scrollIntoView({behavior:'smooth', block:'center'});
+  const banner = document.getElementById('match-banner');
+  if (banner.style.display !== 'none') banner.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+async function rateOpponent(rating) {
+  if (_rated || !_currentOpponentId) return;
+  _rated = true; haptic('light');
+  document.getElementById('btn-rate-up').className   = 'mc-rate-btn' + (rating==='up'   ? ' rated-up' : '');
+  document.getElementById('btn-rate-down').className = 'mc-rate-btn' + (rating==='down' ? ' rated-down' : '');
+  await api('/api/rate', 'POST', {target_id: _currentOpponentId, rating});
+  toast(rating === 'up' ? '👍 Đã đánh giá tốt!' : '👎 Đã ghi nhận');
+}
+
+async function sendRematch() {
+  if (!_currentOpponentId) return; haptic('medium');
+  const d = await api('/api/rematch', 'POST', {opponent_id: _currentOpponentId});
+  toast(d.ok ? '🔁 Đã gửi thách đấu!' : (d.msg || '⚠️ Không gửi được'));
 }
 
 // ── Status poll ────────────────────────────────────────────────────────────────
@@ -714,7 +853,7 @@ async function checkStatus() {
   if (!S.webId || S.matched) return;
   const s = await api('/api/status');
   if (s.matched_with && !S.matched) {
-    showMatchBanner(s.opponent_name || '', s.match_link || '');
+    showMatchBanner(s.opponent_name || '', s.match_link || '', s.opponent_id || '');
   }
 }
 
@@ -724,24 +863,20 @@ async function doReady(auto) {
   haptic('medium');
   S.ready = true; S.matched = false;
   document.getElementById('match-banner').style.display = 'none';
-  updateSub(); syncMainButton(); updateActionRow(); updateFallbackBtns();
+  updateSub(); syncMainButton(); updateActionRow();
   toast(auto ? '⚡ Đang tự ghép...' : '🎮 Đã vào lobby...');
-
   const d = await api('/api/ready', 'POST', {auto});
-
   if (d.matched) {
-    showMatchBanner(d.opponent || '', d.link || '');
+    showMatchBanner(d.opponent || '', d.link || '', d.opponent_id || '');
   }
   refreshLobby();
 }
 
 async function cancelReady() {
-  haptic('light');
-  S.ready = false;
-  updateSub(); syncMainButton(); updateActionRow(); updateFallbackBtns();
+  haptic('light'); S.ready = false;
+  updateSub(); syncMainButton(); updateActionRow();
   await api('/api/cancel', 'POST', {});
-  toast('🔴 Đã hủy');
-  refreshLobby();
+  toast('🔴 Đã hủy'); refreshLobby();
 }
 
 function updateActionRow() {
@@ -749,7 +884,6 @@ function updateActionRow() {
   const b1   = document.getElementById('btn-lobby');
   const b2   = document.getElementById('btn-auto');
   const bcan = document.getElementById('btn-cancel2');
-
   if (!S.profile || S.matched) { row.classList.remove('show'); return; }
   row.classList.add('show');
   if (S.ready) {
@@ -759,48 +893,80 @@ function updateActionRow() {
   }
 }
 
-function updateFallbackBtns() {
-  const r = document.getElementById('fbtn-ready');
-  const c = document.getElementById('fbtn-cancel');
-  if (S.ready) {
-    r.style.display = 'none'; c.style.display = 'block';
-  } else {
-    r.style.display = 'block'; c.style.display = 'none';
-  }
-}
-
 // ── Connect ────────────────────────────────────────────────────────────────────
 async function connect(targetId, host, targetLink='') {
   if (!S.profile) { openSheet(true); return; }
-
   const myLink = S.profile.parsec_link || '';
   if (!myLink && !targetLink) {
-    haptic('heavy');
-    toast('⚠️ Cả hai chưa có link Parsec!');
+    haptic('heavy'); toast('⚠️ Cả hai chưa có link Parsec!');
     try {
       tg?.showPopup({
-        title: '⚠️ Chưa có Parsec Host',
-        message: 'Cả hai bạn đều chưa có link Parsec.\nHãy thêm link vào hồ sơ để có thể chơi cùng nhau!',
-        buttons: [{id:'add', type:'default', text:'Thêm link ngay'}, {type:'cancel'}]
-      }, id => { if (id === 'add') openSheet(); });
+        title:'⚠️ Chưa có Parsec Host',
+        message:'Cả hai đều chưa có link Parsec.\nHãy thêm link để có thể chơi cùng nhau!',
+        buttons:[{id:'add',type:'default',text:'Thêm link ngay'},{type:'cancel'}]
+      }, id => { if(id==='add') openSheet(); });
     } catch(e) { openSheet(); }
     return;
   }
-
   haptic('medium');
-  const d = await api('/api/connect', 'POST', {target_id: targetId, host});
+  const d = await api('/api/connect', 'POST', {target_id:targetId, host});
   if (d.error) { toast('⚠️ ' + d.error); refreshLobby(); return; }
-
-  if (d.link) {
-    if (tg) tg.openLink(d.link);
-    else window.open(d.link, '_blank', 'noopener');
-  }
-
-  showMatchBanner(d.opponent || '', d.link || '');
+  if (d.link) { tg ? tg.openLink(d.link) : window.open(d.link,'_blank','noopener'); }
+  showMatchBanner(d.opponent||'', d.link||'', d.opponent_id||'');
   refreshLobby();
 }
 
-// ── Sheet (bottom sheet) ───────────────────────────────────────────────────────
+// ── Link bar ───────────────────────────────────────────────────────────────────
+function renderLinkBar() {
+  if (!S.profile) return;
+  const bar  = document.getElementById('link-bar');
+  const txt  = document.getElementById('link-text');
+  const link = S.profile.parsec_link || '';
+  bar.classList.add('show');
+  if (link) { txt.textContent = link; txt.className = 'ltext has-link'; }
+  else      { txt.textContent = 'Chưa có link Parsec — nhấn để thêm'; txt.className = 'ltext'; }
+}
+function toggleLinkEdit() {
+  haptic('light');
+  const row = document.getElementById('link-edit-row');
+  const inp = document.getElementById('link-input');
+  if (row.classList.contains('show')) { closeLinkEdit(); return; }
+  inp.value = S.profile?.parsec_link || '';
+  row.classList.add('show'); inp.focus();
+  if (tg?.BackButton) { tg.BackButton.show(); tg.BackButton.onClick(closeLinkEdit); }
+}
+function closeLinkEdit() {
+  document.getElementById('link-edit-row').classList.remove('show');
+  tg?.BackButton.hide();
+}
+async function saveLink() {
+  const link = document.getElementById('link-input').value.trim();
+  haptic('light');
+  const d = await api('/api/setlink', 'POST', {parsec_link: link});
+  if (d.ok) {
+    S.profile.parsec_link = link;
+    renderLinkBar(); closeLinkEdit(); updateSub();
+    toast(link ? '✅ Đã lưu link Parsec!' : '✅ Đã xóa link Parsec');
+  }
+}
+
+// ── Copy link (match overlay / banner) ────────────────────────────────────────
+function copyLink(src) {
+  const rowId = src === 'overlay' ? 'mc-link-row' : 'banner-link-row';
+  const row   = document.getElementById(rowId);
+  const link  = row?.dataset.link;
+  if (!link) return; haptic('light');
+  const btn  = src === 'overlay' ? document.getElementById('mc-copy') : row.querySelector('.btn-join');
+  const orig = btn.textContent;
+  const done = () => { btn.textContent='✅ Đã copy!'; setTimeout(()=>{btn.textContent=orig;},1500); toast('📋 Đã copy link Parsec!'); };
+  navigator.clipboard?.writeText(link).then(done).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = link; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el); done();
+  });
+}
+
+// ── Sheet (register / edit profile) ───────────────────────────────────────────
 function openSheet(required=false) {
   const p = S.profile;
   document.getElementById('sheet-title').textContent = p ? '✏️ Chỉnh hồ sơ' : '👋 Tạo hồ sơ';
@@ -811,54 +977,169 @@ function openSheet(required=false) {
     document.getElementById('f-parsec').value = p.parsec_link  || '';
   }
   document.getElementById('sheet-overlay').classList.add('open');
-
-  // Telegram BackButton to close sheet
-  if (tg?.BackButton && !required) {
-    tg.BackButton.show();
-    tg.BackButton.onClick(closeSheet);
-  }
+  if (tg?.BackButton && !required) { tg.BackButton.show(); tg.BackButton.onClick(closeSheet); }
 }
-
 function closeSheet() {
   if (!S.profile) return;
   document.getElementById('sheet-overlay').classList.remove('open');
   tg?.BackButton.hide();
 }
-
 document.getElementById('sheet-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('sheet-overlay')) closeSheet();
 });
-
 async function saveProfile() {
   const name   = document.getElementById('f-name').value.trim();
   const ingame = document.getElementById('f-ingame').value.trim();
   if (!name) { toast('⚠️ Nhập tên hiển thị!'); return; }
   haptic('light');
-
   const d = await api('/api/register', 'POST', {
-    web_id:       S.webId,
-    display_name: name,
-    ingame_name:  ingame,
-    tier:         document.getElementById('f-tier').value,
-    parsec_link:  document.getElementById('f-parsec').value.trim(),
+    web_id: S.webId, display_name: name, ingame_name: ingame,
+    tier:   document.getElementById('f-tier').value,
+    parsec_link: document.getElementById('f-parsec').value.trim(),
   });
-
   if (d.error) { toast('⚠️ ' + d.error); return; }
-  S.webId   = d.web_id;
-  S.profile = d.profile;
+  S.webId = d.web_id; S.profile = d.profile;
   if (!tgUser) localStorage.setItem('pes_id', d.web_id);
   document.getElementById('sheet-overlay').classList.remove('open');
   tg?.BackButton.hide();
-  renderPanel();
-  toast('✅ Đã lưu hồ sơ!');
+  renderPanel(); toast('✅ Đã lưu hồ sơ!');
 }
 
-// ── Ping online ────────────────────────────────────────────────────────────────
+// ── Ping ──────────────────────────────────────────────────────────────────────
 async function pingOnline() {
   if (!S.webId) return;
   const d = await api('/api/ping', 'POST', {});
   if (d.online !== undefined)
     document.getElementById('online-count').textContent = `🟢 ${d.online} online`;
+}
+
+// ── Reload ────────────────────────────────────────────────────────────────────
+async function reloadLobby() {
+  const btn = document.getElementById('reload-btn');
+  btn.classList.add('spinning');
+  await refreshLobby();
+  setTimeout(() => btn.classList.remove('spinning'), 400);
+}
+
+// ── Schedule tab ──────────────────────────────────────────────────────────────
+function toggleSchForm() {
+  const f = document.getElementById('sch-form');
+  f.classList.toggle('show');
+  if (f.classList.contains('show')) {
+    const now = new Date(Date.now() + 60*60*1000);
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('sch-time').value =
+      `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:00`;
+  }
+}
+async function saveSchedule() {
+  if (!S.profile) { toast('⚠️ Chưa đăng ký!'); return; }
+  const stime = document.getElementById('sch-time').value;
+  const note  = document.getElementById('sch-note').value.trim();
+  if (!stime) { toast('⚠️ Chọn thời gian!'); return; }
+  haptic('light');
+  const d = await api('/api/schedules', 'POST', {scheduled_time: stime, note});
+  if (d.ok) { toast('✅ Đã thêm lịch!'); toggleSchForm(); document.getElementById('sch-note').value=''; loadSchedules(); }
+  else toast('⚠️ ' + (d.error || 'Lỗi'));
+}
+async function deleteSchedule(id) {
+  haptic('light');
+  const d = await api(`/api/schedules/${id}`, 'DELETE');
+  if (d.ok) { toast('🗑️ Đã xóa'); loadSchedules(); }
+}
+async function loadSchedules() {
+  const list = document.getElementById('sch-list');
+  const rows = await api('/api/schedules');
+  if (!Array.isArray(rows) || !rows.length) {
+    list.innerHTML = `<div class="empty"><span>📅</span>Chưa có lịch nào</div>`; return;
+  }
+  const now = Date.now() - 3600000;
+  const upcoming = rows.filter(s => new Date(s.scheduled_time).getTime() >= now);
+  if (!upcoming.length) {
+    list.innerHTML = `<div class="empty"><span>📅</span>Không có lịch sắp tới</div>`; return;
+  }
+  list.innerHTML = upcoming.map(s => {
+    const dt = new Date(s.scheduled_time);
+    const tstr = dt.toLocaleString('vi-VN', {weekday:'short',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const isMe = s.web_id === S.webId;
+    return `<div class="sch-item">
+      <div class="sch-time">${tstr}</div>
+      <div class="sch-info">
+        <span class="sch-name">${e(s.display_name)}</span>
+        ${s.note ? `<span class="sch-note">${e(s.note)}</span>` : ''}
+      </div>
+      ${isMe ? `<button class="sch-del" onclick="deleteSchedule(${s.id})">✕</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Leaderboard tab ───────────────────────────────────────────────────────────
+async function loadLeaderboard() {
+  const list = document.getElementById('lb-list');
+  list.innerHTML = `<div class="empty"><span style="font-size:1.5rem">⏳</span></div>`;
+  const rows = await api('/api/leaderboard');
+  if (!Array.isArray(rows) || !rows.length) {
+    list.innerHTML = `<div class="empty"><span>🏆</span>Chưa có dữ liệu</div>`; return;
+  }
+  list.innerHTML = rows.map((r, i) => {
+    const rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-size:.85rem;color:var(--hint)">#${i+1}</span>`;
+    return `<div class="lb-item">
+      <span class="lb-rank">${rank}</span>
+      <span class="lb-name">${e(r.name)}</span>
+      <span class="lb-count">${r.matches} trận</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Me tab ────────────────────────────────────────────────────────────────────
+async function loadMe() {
+  const p = S.profile;
+  if (!p) {
+    document.getElementById('me-profile-card').innerHTML =
+      `<div class="empty"><span>👤</span>Chưa đăng ký</div>`;
+    return;
+  }
+  const av = document.getElementById('me-av-big');
+  av.textContent = initials(p.display_name);
+  av.style.background = avColor(p.display_name);
+  document.getElementById('me-display-name').textContent = p.display_name;
+  document.getElementById('me-ingame-name').textContent  = p.ingame_name ? `🎮 ${p.ingame_name}` : '';
+  const tc = TIER_CLASS[p.tier] || 't5';
+  const ts = TIER_STARS[p.tier] || '';
+  document.getElementById('me-tier-row').innerHTML =
+    `<span class="tbadge ${tc}">${ts} ${p.tier}</span>`;
+
+  document.getElementById('notify-toggle').checked = !!p.notify_me;
+
+  const st = await api('/api/stats');
+  document.getElementById('stat-matches').textContent = st.total_matches ?? 0;
+  document.getElementById('stat-up').textContent      = `${st.thumbs_up ?? 0} 👍`;
+  document.getElementById('stat-down').textContent    = `${st.thumbs_down ?? 0} 👎`;
+
+  const hist = await api('/api/history');
+  const hlist = document.getElementById('history-list');
+  if (!Array.isArray(hist) || !hist.length) {
+    hlist.innerHTML = `<div class="empty" style="padding:20px 0"><span>⚔️</span>Chưa có trận nào</div>`;
+  } else {
+    hlist.innerHTML = hist.map(m => {
+      const dt   = new Date(m.matched_at + 'Z');
+      const tstr = dt.toLocaleString('vi-VN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      return `<div class="hist-item">
+        <span class="hist-vs">vs</span>
+        <span class="hist-opp">${e(m.opponent)}</span>
+        <span class="hist-time">${tstr}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+async function toggleNotify(enabled) {
+  haptic('light');
+  const d = await api('/api/notify-me', 'POST', {enabled});
+  if (d.ok) {
+    if (S.profile) S.profile.notify_me = d.notify_me;
+    toast(enabled ? '🔔 Bật thông báo!' : '🔕 Tắt thông báo');
+  }
 }
 
 // ── Sound ──────────────────────────────────────────────────────────────────────
@@ -882,83 +1163,9 @@ function playMatchSound() {
 let _tt;
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
+  el.textContent = msg; el.classList.add('show');
   clearTimeout(_tt);
   _tt = setTimeout(() => el.classList.remove('show'), 2800);
-}
-
-function copyLink(src) {
-  const rowId = src === 'overlay' ? 'mc-link-row' : 'banner-link-row';
-  const row   = document.getElementById(rowId);
-  const link  = row?.dataset.link;
-  if (!link) return;
-  haptic('light');
-  const btn  = src === 'overlay' ? document.getElementById('mc-copy') : row.querySelector('.btn-join');
-  const orig = btn.textContent;
-  const doFeedback = () => {
-    btn.textContent = '✅ Đã copy!';
-    setTimeout(() => { btn.textContent = orig; }, 1500);
-    toast('📋 Đã copy link Parsec!');
-  };
-  navigator.clipboard?.writeText(link).then(doFeedback).catch(() => {
-    const el = document.createElement('textarea');
-    el.value = link; document.body.appendChild(el); el.select();
-    document.execCommand('copy'); document.body.removeChild(el);
-    doFeedback();
-  });
-}
-
-// ── Link bar ───────────────────────────────────────────────────────────────────
-function renderLinkBar() {
-  if (!S.profile) return;
-  const bar  = document.getElementById('link-bar');
-  const txt  = document.getElementById('link-text');
-  const link = S.profile.parsec_link || '';
-  bar.classList.add('show');
-  if (link) {
-    txt.textContent = link;
-    txt.className   = 'ltext has-link';
-  } else {
-    txt.textContent = 'Chưa có link Parsec — nhấn để thêm';
-    txt.className   = 'ltext';
-  }
-}
-
-function toggleLinkEdit() {
-  haptic('light');
-  const row = document.getElementById('link-edit-row');
-  const inp = document.getElementById('link-input');
-  if (row.classList.contains('show')) { closeLinkEdit(); return; }
-  inp.value = S.profile?.parsec_link || '';
-  row.classList.add('show');
-  inp.focus();
-  if (tg?.BackButton) { tg.BackButton.show(); tg.BackButton.onClick(closeLinkEdit); }
-}
-
-function closeLinkEdit() {
-  document.getElementById('link-edit-row').classList.remove('show');
-  tg?.BackButton.hide();
-}
-
-async function saveLink() {
-  const link = document.getElementById('link-input').value.trim();
-  haptic('light');
-  const d = await api('/api/setlink', 'POST', {parsec_link: link});
-  if (d.ok) {
-    S.profile.parsec_link = link;
-    renderLinkBar();
-    closeLinkEdit();
-    updateSub();
-    toast(link ? '✅ Đã lưu link Parsec!' : '✅ Đã xóa link Parsec');
-  }
-}
-
-async function reloadLobby() {
-  const btn = document.getElementById('reload-btn');
-  btn.classList.add('spinning');
-  await refreshLobby();
-  setTimeout(() => btn.classList.remove('spinning'), 400);
 }
 
 function e(s) {
