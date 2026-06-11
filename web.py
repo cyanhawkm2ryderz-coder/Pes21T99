@@ -57,7 +57,7 @@ async def _send_lobby_notify(name):
         InlineKeyboardButton("🎮 Vào Lobby", url="https://t.me/pes21t99bot/lobby")
     ]])
     await _bot_send(GROUP_CHAT_ID,
-        f"🔍 *{name}* đang tìm đối — ai đá không?",
+        f"*{name}* đang tìm đối, ai vào không!",
         reply_markup=kb)
 
 async def _notify_subscribers(entering_name, entering_wid):
