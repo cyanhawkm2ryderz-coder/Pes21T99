@@ -71,6 +71,13 @@ async def _send_lobby_notify(name):
     except Exception as ex:
         print(f"[BOT SEND ERR] {ex}", flush=True)
 
+async def _dm_host(host_wid, guest_name):
+    """Nhắc host mở Parsec accept đối thủ."""
+    if not host_wid or not host_wid.startswith("tg_"):
+        return
+    await _bot_send(host_wid[3:],
+        f"⚔️ *{guest_name}* sắp vào phòng của bạn!\n\n🏠 Hãy mở *Parsec* và nhấn **Accept** để bắt đầu trận!")
+
 async def _notify_subscribers(entering_name, entering_wid):
     conn = get_db()
     try:
@@ -404,6 +411,11 @@ def set_ready():
                     )
                     _record_match(cur, wid, me["display_name"], opp["web_id"], opp["display_name"])
                     conn.commit()
+                    # DM host: nếu link_for_me=None thì tôi là host, nếu link_for_opp=None thì opp là host
+                    if not link_for_me:
+                        _fire(_dm_host(wid, opp["display_name"]))
+                    elif not link_for_opp:
+                        _fire(_dm_host(opp["web_id"], me["display_name"]))
                     return jsonify({
                         "ok": True, "matched": True,
                         "opponent": opp["display_name"],
@@ -471,6 +483,11 @@ def connect():
         conn.commit()
     finally:
         conn.close()
+    # DM host: host="them" → target host, host="me" → tôi host
+    if host == "them":
+        _fire(_dm_host(target_wid, me["display_name"]))
+    else:
+        _fire(_dm_host(wid, target["display_name"]))
     return jsonify({"ok": True, "link": link_for_me, "opponent": target["display_name"],
                     "opponent_id": target_wid})
 
