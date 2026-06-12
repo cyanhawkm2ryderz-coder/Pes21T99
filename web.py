@@ -72,11 +72,16 @@ async def _send_lobby_notify(name):
         print(f"[BOT SEND ERR] {ex}", flush=True)
 
 async def _dm_host(host_wid, guest_name):
-    """Nhắc host mở Parsec accept đối thủ."""
     if not host_wid or not host_wid.startswith("tg_"):
         return
     await _bot_send(host_wid[3:],
         f"⚔️ *{guest_name}* sắp vào phòng của bạn!\n\n🏠 Hãy mở *Parsec* và nhấn **Accept** để bắt đầu trận!")
+
+async def _dm_host_copied(host_wid, guest_name):
+    if not host_wid or not host_wid.startswith("tg_"):
+        return
+    await _bot_send(host_wid[3:],
+        f"🔗 *{guest_name}* vừa copy link — chuẩn bị *Accept* trong Parsec nhé!")
 
 async def _notify_subscribers(entering_name, entering_wid):
     conn = get_db()
@@ -668,6 +673,17 @@ def rate():
         conn.commit()
     finally:
         conn.close()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/notify-host", methods=["POST"])
+def notify_host():
+    wid, me = auth(request)
+    if not me:
+        return jsonify({"error": "not found"}), 401
+    host_id = (request.json or {}).get("host_id", "")
+    if host_id:
+        _fire(_dm_host_copied(host_id, me["display_name"]))
     return jsonify({"ok": True})
 
 

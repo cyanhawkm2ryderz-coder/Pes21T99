@@ -778,7 +778,7 @@ function copyIngame(name) {
 let _matchTimer;
 
 function showMatchBanner(opponentName, link, opponentId) {
-  S.matched = true; S.ready = false; _rated = false;
+  S.matched = true; S.ready = false; _rated = false; _hostNotified = false;
   _currentOpponentId = opponentId || null;
   haptic('heavy'); playMatchSound();
   updateSub(); syncMainButton(); updateActionRow();
@@ -976,6 +976,11 @@ function copyLink(src) {
     el.value = link; document.body.appendChild(el); el.select();
     document.execCommand('copy'); document.body.removeChild(el); done();
   });
+  // Báo host biết guest đã copy link (chỉ 1 lần)
+  if (_currentOpponentId && !_hostNotified) {
+    _hostNotified = true;
+    api('/api/notify-host', 'POST', {host_id: _currentOpponentId});
+  }
 }
 
 // ── Sheet (register / edit profile) ───────────────────────────────────────────
@@ -1172,6 +1177,8 @@ function playMatchSound() {
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────────────
+let _hostNotified = false;
+
 let _tt;
 function toast(msg) {
   const el = document.getElementById('toast');
