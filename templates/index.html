@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PES Lobby</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
 :root {
   --bg:      var(--tg-theme-bg-color,           #17212b);
@@ -48,7 +49,7 @@ header h1 span{color:var(--accent)}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:3px;padding:8px 0;border:none;background:transparent;
   color:var(--hint);font-size:.6rem;font-weight:600;cursor:pointer;touch-action:manipulation}
-.tab-btn .ti{font-size:1.3rem;transition:transform .15s}
+.tab-btn .ti{font-size:1.35rem;transition:transform .15s;line-height:1}
 .tab-btn.active{color:var(--btn)}
 .tab-btn.active .ti{transform:scale(1.15)}
 
@@ -314,8 +315,8 @@ header h1 span{color:var(--accent)}
 
 <header>
   <h1>⚽ PES <span>LOBBY</span></h1>
-  <span class="badge-online" id="online-count">🟢 0 online</span>
-  <button id="reload-btn" onclick="reloadLobby()" title="Tải lại">↻</button>
+  <span class="badge-online" id="online-count"><i class="bi bi-circle-fill" style="font-size:.55rem;vertical-align:middle"></i> 0 online</span>
+  <button id="reload-btn" onclick="reloadLobby()" title="Tải lại"><i class="bi bi-arrow-clockwise"></i></button>
   <button id="avatar-btn" onclick="openSheet()"></button>
 </header>
 
@@ -335,9 +336,9 @@ header h1 span{color:var(--accent)}
 
     <div id="link-bar">
       <div id="link-display" onclick="toggleLinkEdit()">
-        <span class="licon">🔗</span>
+        <span class="licon"><i class="bi bi-link-45deg"></i></span>
         <span class="ltext" id="link-text">Chưa có link Parsec — nhấn để thêm</span>
-        <span class="ledit">✏️</span>
+        <span class="ledit"><i class="bi bi-pencil"></i></span>
       </div>
       <div id="link-edit-row">
         <input id="link-input" placeholder="https://parsec.gg/..." type="url" autocomplete="off"
@@ -348,28 +349,28 @@ header h1 span{color:var(--accent)}
     </div>
 
     <div id="action-row">
-      <button class="btn-act manual" id="btn-lobby"   onclick="doReady(false)">📋 Danh sách chờ</button>
-      <button class="btn-act auto"   id="btn-auto"    onclick="doReady(true)">🎲 Ghép Random</button>
-      <button class="btn-act cancel" id="btn-cancel2" style="display:none" onclick="cancelReady()">✕ Hủy</button>
+      <button class="btn-act manual" id="btn-lobby"   onclick="doReady(false)"><i class="bi bi-list-ul"></i> Danh sách chờ</button>
+      <button class="btn-act auto"   id="btn-auto"    onclick="doReady(true)"><i class="bi bi-shuffle"></i> Ghép Random</button>
+      <button class="btn-act cancel" id="btn-cancel2" style="display:none" onclick="cancelReady()"><i class="bi bi-x-lg"></i> Hủy</button>
     </div>
 
     <div id="match-banner">
-      <h2>⚔️ Ghép trận thành công!</h2>
+      <h2><i class="bi bi-controller" style="color:var(--accent)"></i> Ghép trận thành công!</h2>
       <p id="match-desc"></p>
       <div class="link-row" id="banner-link-row" style="display:none">
-        <button class="btn-join" onclick="copyLink('banner')">📋 Copy Link Parsec</button>
+        <button class="btn-join" onclick="copyLink('banner')"><i class="bi bi-clipboard"></i> Copy Link Parsec</button>
       </div>
       <p id="match-nolink" style="display:none;color:var(--accent);font-size:.82rem;margin-top:8px;font-weight:600">
-        🏠 Bạn đang host — mở Parsec và Accept khi đối thủ vào!
+        <i class="bi bi-house-fill"></i> Bạn đang host — mở Parsec và Accept khi đối thủ vào!
       </p>
       <button onclick="endMatch()" style="margin-top:10px;width:100%;padding:10px;border-radius:10px;
         border:1px solid rgba(255,77,109,.4);background:transparent;color:var(--red);
-        font-size:.82rem;font-weight:600;cursor:pointer">🔴 Kết thúc trận</button>
+        font-size:.82rem;font-weight:600;cursor:pointer"><i class="bi bi-stop-circle"></i> Kết thúc trận</button>
     </div>
 
     <div class="section-label">Đang tìm đối</div>
     <div id="lobby">
-      <div class="empty"><span>😴</span>Chưa có ai tìm đối</div>
+      <div class="empty"><span><i class="bi bi-moon-stars" style="font-size:2rem"></i></span>Chưa có ai tìm đối</div>
     </div>
 
     <div id="busy-section">
@@ -381,7 +382,7 @@ header h1 span{color:var(--accent)}
 
   <!-- ══ TAB: LỊCH ══ -->
   <div id="panel-schedule" class="tab-panel">
-    <button class="sch-add-btn" onclick="toggleSchForm()">📅 Thêm lịch online</button>
+    <button class="sch-add-btn" onclick="toggleSchForm()"><i class="bi bi-plus-circle-fill"></i> Thêm lịch online</button>
     <div class="sch-form" id="sch-form">
       <div class="fgrp">
         <label>Thời gian</label>
@@ -392,13 +393,13 @@ header h1 span{color:var(--accent)}
         <input id="sch-note" placeholder="VD: tối nay rảnh từ 8h" maxlength="80">
       </div>
       <div class="sch-form-btns">
-        <button class="sch-save-btn"   onclick="saveSchedule()">💾 Lưu</button>
+        <button class="sch-save-btn"   onclick="saveSchedule()"><i class="bi bi-check-lg"></i> Lưu</button>
         <button class="sch-cancel-btn" onclick="toggleSchForm()">Hủy</button>
       </div>
     </div>
     <div class="section-label">Lịch online sắp tới</div>
     <div id="sch-list">
-      <div class="empty"><span>📅</span>Chưa có lịch nào</div>
+      <div class="empty"><span><i class="bi bi-calendar3" style="font-size:2rem"></i></span>Chưa có lịch nào</div>
     </div>
   </div>
 
@@ -406,7 +407,7 @@ header h1 span{color:var(--accent)}
   <div id="panel-leaderboard" class="tab-panel">
     <div class="section-label">Top 10 nhiều trận nhất</div>
     <div id="lb-list">
-      <div class="empty"><span>🏆</span>Chưa có dữ liệu</div>
+      <div class="empty"><span><i class="bi bi-trophy" style="font-size:2rem"></i></span>Chưa có dữ liệu</div>
     </div>
   </div>
 
@@ -427,21 +428,21 @@ header h1 span{color:var(--accent)}
           <div class="stat-lbl">trận đã đấu</div>
         </div>
         <div class="stat-box">
-          <div class="stat-val" id="stat-up" style="color:#00e676">0 👍</div>
+          <div class="stat-val" id="stat-up" style="color:#00e676">0 <i class="bi bi-hand-thumbs-up-fill"></i></div>
           <div class="stat-lbl">khen ngợi</div>
         </div>
         <div class="stat-box">
-          <div class="stat-val" id="stat-down" style="color:#ff4d6d">0 👎</div>
+          <div class="stat-val" id="stat-down" style="color:#ff4d6d">0 <i class="bi bi-hand-thumbs-down-fill"></i></div>
           <div class="stat-lbl">phê bình</div>
         </div>
       </div>
-      <button class="edit-profile-btn" onclick="openSheet()">✏️ Chỉnh hồ sơ</button>
+      <button class="edit-profile-btn" onclick="openSheet()"><i class="bi bi-pencil-square"></i> Chỉnh hồ sơ</button>
     </div>
 
     <div class="me-card">
       <div class="toggle-row">
         <div>
-          <div class="toggle-label">🔔 Thông báo khi có người vào lobby</div>
+          <div class="toggle-label"><i class="bi bi-bell-fill" style="color:var(--accent)"></i> Thông báo khi có người vào lobby</div>
           <div class="toggle-hint">Bot Telegram sẽ nhắn tin cho bạn</div>
         </div>
         <label class="toggle-switch">
@@ -454,7 +455,7 @@ header h1 span{color:var(--accent)}
     <div class="me-card" id="history-card">
       <div class="section-label" style="margin-bottom:10px">Lịch sử trận đấu</div>
       <div id="history-list">
-        <div class="empty" style="padding:20px 0"><span>⚔️</span>Chưa có trận nào</div>
+        <div class="empty" style="padding:20px 0"><span><i class="bi bi-controller" style="font-size:2rem"></i></span>Chưa có trận nào</div>
       </div>
     </div>
   </div>
@@ -464,40 +465,40 @@ header h1 span{color:var(--accent)}
 <!-- Bottom nav -->
 <nav id="bottom-nav">
   <button class="tab-btn active" data-tab="lobby"       onclick="switchTab('lobby')">
-    <span class="ti">🏠</span>Lobby
+    <i class="bi bi-controller ti"></i>Lobby
   </button>
   <button class="tab-btn" data-tab="schedule"    onclick="switchTab('schedule')">
-    <span class="ti">📅</span>Lịch
+    <i class="bi bi-calendar3 ti"></i>Lịch
   </button>
   <button class="tab-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
-    <span class="ti">🏆</span>BXH
+    <i class="bi bi-trophy ti"></i>BXH
   </button>
   <button class="tab-btn" data-tab="me"          onclick="switchTab('me')">
-    <span class="ti">👤</span>Tôi
+    <i class="bi bi-person ti"></i>Tôi
   </button>
 </nav>
 
 <!-- Match popup overlay -->
 <div id="match-overlay">
   <div id="match-card">
-    <div class="mc-ring">⚔️</div>
+    <div class="mc-ring"><i class="bi bi-controller" style="font-size:2rem;color:var(--accent)"></i></div>
     <div class="mc-title">Tìm được đối thủ!</div>
     <div class="mc-vs">Đối thủ của bạn</div>
     <div class="mc-opp" id="mc-opp-name">—</div>
     <div class="mc-link-row" id="mc-link-row">
-      <button id="mc-copy" onclick="copyLink('overlay')">📋 Copy Link Parsec</button>
+      <button id="mc-copy" onclick="copyLink('overlay')"><i class="bi bi-clipboard"></i> Copy Link Parsec</button>
     </div>
     <p class="mc-nolink" id="mc-nolink" style="display:none">
-      🏠 Bạn đang <b>host</b> — mở Parsec và <b>Accept</b> khi đối thủ vào!
+      <i class="bi bi-house-fill"></i> Bạn đang <b>host</b> — mở Parsec và <b>Accept</b> khi đối thủ vào!
     </p>
     <div class="mc-rating" id="mc-rating" style="display:none">
       <div class="mc-rating-lbl">Đánh giá đối thủ:</div>
       <div class="mc-rating-btns">
-        <button class="mc-rate-btn" id="btn-rate-up"   onclick="rateOpponent('up')">👍</button>
-        <button class="mc-rate-btn" id="btn-rate-down" onclick="rateOpponent('down')">👎</button>
+        <button class="mc-rate-btn" id="btn-rate-up"   onclick="rateOpponent('up')"><i class="bi bi-hand-thumbs-up-fill"></i></button>
+        <button class="mc-rate-btn" id="btn-rate-down" onclick="rateOpponent('down')"><i class="bi bi-hand-thumbs-down-fill"></i></button>
       </div>
     </div>
-    <button id="mc-rematch" style="display:none" onclick="sendRematch()">🔁 Thách đấu lại</button>
+    <button id="mc-rematch" style="display:none" onclick="sendRematch()"><i class="bi bi-arrow-repeat"></i> Thách đấu lại</button>
     <button id="mc-close" onclick="closeMatchOverlay()">Đã hiểu</button>
     <div class="mc-timer" id="mc-timer"></div>
   </div>
@@ -509,7 +510,7 @@ header h1 span{color:var(--accent)}
 <div class="overlay" id="sheet-overlay">
   <div class="sheet" id="sheet">
     <div class="handle"></div>
-    <h2 id="sheet-title">👋 Tạo hồ sơ</h2>
+    <h2 id="sheet-title"><i class="bi bi-person-vcard"></i> Tạo hồ sơ</h2>
     <div class="fgrp">
       <label>Tên hiển thị</label>
       <input id="f-name" placeholder="Tên của bạn" maxlength="30">
@@ -640,7 +641,7 @@ function updateSub() {
   } else {
     dot.className = 'status-dot';
     const link = p.parsec_link ? p.parsec_link.replace('https://','').slice(0,28) : 'Chưa có link';
-    sub.textContent = `${TIER_STARS[p.tier]||''} ${p.tier} · 🔗 ${link}`;
+    sub.textContent = `${TIER_STARS[p.tier]||''} ${p.tier} · ${link}`;
   }
 }
 
@@ -668,7 +669,7 @@ async function refreshLobby() {
   const busy    = players.filter(p => p.web_id !== S.webId && !p.is_ready && p.status === 'busy');
   const el = document.getElementById('lobby');
   if (!waiting.length) {
-    el.innerHTML = `<div class="empty"><span>😴</span>Chưa có ai tìm đối<br>
+    el.innerHTML = `<div class="empty"><span><i class="bi bi-moon-stars" style="font-size:2rem"></i></span>Chưa có ai tìm đối<br>
       <small style="margin-top:6px;display:block">Nhấn "Tìm Đối" để vào hàng chờ!</small></div>`;
   } else {
     el.innerHTML = waiting.map(buildCard).join('');
@@ -706,7 +707,7 @@ function buildCard(p) {
       <div class="c-av" style="background:${color}">${ini}</div>
       <div class="c-info">
         <div class="c-name">${e(p.display_name)}</div>
-        <div class="c-sub">🔒 Đã có đôi</div>
+        <div class="c-sub"><i class="bi bi-lock-fill"></i> Đã có đôi</div>
       </div></div>`;
   }
   if (!p.is_ready && p.matched_with === myId && p.match_link) {
@@ -714,9 +715,9 @@ function buildCard(p) {
       <div class="c-av" style="background:${color}">${ini}</div>
       <div class="c-info">
         <div class="c-name">${e(p.display_name)}</div>
-        <div class="c-sub">⚔️ Đang host cho bạn!</div>
+        <div class="c-sub"><i class="bi bi-controller"></i> Đang host cho bạn!</div>
       </div>
-      <a class="btn-h them" href="${e(p.match_link)}" target="_blank">🔗 Vào</a>
+      <a class="btn-h them" href="${e(p.match_link)}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Vào</a>
     </div>`;
   }
 
@@ -727,14 +728,14 @@ function buildCard(p) {
         <button class="btn-h them" onclick="connect('${p.web_id}','them','${tLink}')">Host bạn</button>
         <button class="btn-h me"   onclick="connect('${p.web_id}','me','${tLink}')">Host tôi</button>
        </div>`
-    : `<div class="c-actions" style="font-size:.7rem;color:var(--hint)">⚠️</div>`;
+    : `<div class="c-actions" style="font-size:.85rem;color:var(--hint)"><i class="bi bi-three-dots"></i></div>`;
 
   const hostTag = p.parsec_link
-    ? `<span class="htag has-host">✅ Có Host</span>`
-    : `<span class="htag no-host">🚫 No Host</span>`;
+    ? `<span class="htag has-host"><i class="bi bi-check-circle-fill"></i> Có Host</span>`
+    : `<span class="htag no-host"><i class="bi bi-x-circle-fill"></i> No Host</span>`;
 
   const igLine = p.ingame_name
-    ? `<br><span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID">🎮 ${e(p.ingame_name)} 📋</span>`
+    ? `<br><span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID"><i class="bi bi-joystick"></i> ${e(p.ingame_name)} <i class="bi bi-clipboard" style="font-size:.6rem"></i></span>`
     : '';
 
   return `<div class="card">
@@ -744,7 +745,7 @@ function buildCard(p) {
       <div class="c-sub">
         <span class="tbadge ${tc}">${ts} ${p.tier}</span>
         ${hostTag}
-        ${wt ? `<span class="timer-tag">⏳${wt}</span>` : ''}
+        ${wt ? `<span class="timer-tag"><i class="bi bi-clock"></i> ${wt}</span>` : ''}
         ${igLine}
       </div>
     </div>
@@ -759,7 +760,7 @@ function buildBusyCard(p) {
     <div class="c-av" style="background:${color}">${ini}</div>
     <div class="c-info">
       <div class="c-name">${e(p.display_name)}</div>
-      <div class="c-sub"><span class="busy-tag">🔴 Đang đấu</span></div>
+      <div class="c-sub"><span class="busy-tag"><i class="bi bi-record-circle-fill"></i> Đang đấu</span></div>
     </div>
   </div>`;
 }
@@ -771,7 +772,7 @@ function copyIngame(name) {
     document.execCommand('copy'); document.body.removeChild(el);
   });
   haptic('light');
-  toast(`📋 Đã copy: ${name}`);
+  toast(`Đã copy: ${name}`);
 }
 
 // ── Match overlay ──────────────────────────────────────────────────────────────
@@ -786,7 +787,7 @@ function showMatchBanner(opponentName, link, opponentId) {
   const desc     = document.getElementById('match-desc');
   const nolink   = document.getElementById('match-nolink');
   const bannerRow = document.getElementById('banner-link-row');
-  desc.textContent = opponentName ? `⚔️ Đối thủ: ${opponentName}` : '⚔️ Đã ghép trận!';
+  desc.textContent = opponentName ? `Đối thủ: ${opponentName}` : 'Đã ghép trận!';
   if (link) {
     bannerRow.style.display = 'flex'; bannerRow.dataset.link = link;
     nolink.style.display = 'none';
@@ -842,13 +843,13 @@ async function rateOpponent(rating) {
   document.getElementById('btn-rate-up').className   = 'mc-rate-btn' + (rating==='up'   ? ' rated-up' : '');
   document.getElementById('btn-rate-down').className = 'mc-rate-btn' + (rating==='down' ? ' rated-down' : '');
   await api('/api/rate', 'POST', {target_id: _currentOpponentId, rating});
-  toast(rating === 'up' ? '👍 Đã đánh giá tốt!' : '👎 Đã ghi nhận');
+  toast(rating === 'up' ? 'Đã đánh giá tốt!' : 'Đã ghi nhận');
 }
 
 async function sendRematch() {
   if (!_currentOpponentId) return; haptic('medium');
   const d = await api('/api/rematch', 'POST', {opponent_id: _currentOpponentId});
-  toast(d.ok ? '🔁 Đã gửi thách đấu!' : (d.msg || '⚠️ Không gửi được'));
+  toast(d.ok ? 'Đã gửi thách đấu!' : (d.msg || 'Không gửi được'));
 }
 
 // ── Status poll ────────────────────────────────────────────────────────────────
@@ -867,7 +868,7 @@ async function doReady(auto) {
   S.ready = true; S.matched = false;
   document.getElementById('match-banner').style.display = 'none';
   updateSub(); syncMainButton(); updateActionRow();
-  toast(auto ? '⚡ Đang tự ghép...' : '🎮 Đã vào lobby...');
+  toast(auto ? 'Đang tự ghép...' : 'Đã vào lobby...');
   const d = await api('/api/ready', 'POST', {auto});
   if (d.matched) {
     showMatchBanner(d.opponent || '', d.link || '', d.opponent_id || '');
@@ -879,7 +880,7 @@ async function cancelReady() {
   haptic('light'); S.ready = false;
   updateSub(); syncMainButton(); updateActionRow();
   await api('/api/cancel', 'POST', {});
-  toast('🔴 Đã hủy'); refreshLobby();
+  toast('Đã hủy'); refreshLobby();
 }
 
 async function endMatch() {
@@ -888,7 +889,7 @@ async function endMatch() {
   document.getElementById('match-banner').style.display = 'none';
   updateSub(); syncMainButton(); updateActionRow();
   await api('/api/cancel', 'POST', {});
-  toast('🔴 Đã kết thúc trận'); refreshLobby();
+  toast('Đã kết thúc trận'); refreshLobby();
 }
 
 function updateActionRow() {
@@ -910,7 +911,7 @@ async function connect(targetId, host, targetLink='') {
   if (!S.profile) { openSheet(true); return; }
   const myLink = S.profile.parsec_link || '';
   if (!myLink && !targetLink) {
-    haptic('heavy'); toast('⚠️ Cả hai chưa có link Parsec!');
+    haptic('heavy'); toast('Cả hai chưa có link Parsec!');
     try {
       tg?.showPopup({
         title:'⚠️ Chưa có Parsec Host',
@@ -922,7 +923,7 @@ async function connect(targetId, host, targetLink='') {
   }
   haptic('medium');
   const d = await api('/api/connect', 'POST', {target_id:targetId, host});
-  if (d.error) { toast('⚠️ ' + d.error); refreshLobby(); return; }
+  if (d.error) { toast(d.error); refreshLobby(); return; }
   if (d.link) { tg ? tg.openLink(d.link) : window.open(d.link,'_blank','noopener'); }
   showMatchBanner(d.opponent||'', d.link||'', d.opponent_id||'');
   refreshLobby();
@@ -958,7 +959,7 @@ async function saveLink() {
   if (d.ok) {
     S.profile.parsec_link = link;
     renderLinkBar(); closeLinkEdit(); updateSub();
-    toast(link ? '✅ Đã lưu link Parsec!' : '✅ Đã xóa link Parsec');
+    toast(link ? 'Đã lưu link Parsec!' : 'Đã xóa link Parsec');
   }
 }
 
@@ -970,7 +971,7 @@ function copyLink(src) {
   if (!link) return; haptic('light');
   const btn  = src === 'overlay' ? document.getElementById('mc-copy') : row.querySelector('.btn-join');
   const orig = btn.textContent;
-  const done = () => { btn.textContent='✅ Đã copy!'; setTimeout(()=>{btn.textContent=orig;},1500); toast('📋 Đã copy link Parsec!'); };
+  const done = () => { btn.textContent='✓ Đã copy!'; setTimeout(()=>{btn.textContent=orig;},1500); toast('Đã copy link Parsec!'); };
   navigator.clipboard?.writeText(link).then(done).catch(() => {
     const el = document.createElement('textarea');
     el.value = link; document.body.appendChild(el); el.select();
@@ -986,7 +987,7 @@ function copyLink(src) {
 // ── Sheet (register / edit profile) ───────────────────────────────────────────
 function openSheet(required=false) {
   const p = S.profile;
-  document.getElementById('sheet-title').textContent = p ? '✏️ Chỉnh hồ sơ' : '👋 Tạo hồ sơ';
+  document.getElementById('sheet-title').textContent = p ? 'Chỉnh hồ sơ' : 'Tạo hồ sơ';
   if (p) {
     document.getElementById('f-name').value   = p.display_name || '';
     document.getElementById('f-ingame').value = p.ingame_name  || '';
@@ -1007,19 +1008,19 @@ document.getElementById('sheet-overlay').addEventListener('click', e => {
 async function saveProfile() {
   const name   = document.getElementById('f-name').value.trim();
   const ingame = document.getElementById('f-ingame').value.trim();
-  if (!name) { toast('⚠️ Nhập tên hiển thị!'); return; }
+  if (!name) { toast('Nhập tên hiển thị!'); return; }
   haptic('light');
   const d = await api('/api/register', 'POST', {
     web_id: S.webId, display_name: name, ingame_name: ingame,
     tier:   document.getElementById('f-tier').value,
     parsec_link: document.getElementById('f-parsec').value.trim(),
   });
-  if (d.error) { toast('⚠️ ' + d.error); return; }
+  if (d.error) { toast(d.error); return; }
   S.webId = d.web_id; S.profile = d.profile;
   if (!tgUser) localStorage.setItem('pes_id', d.web_id);
   document.getElementById('sheet-overlay').classList.remove('open');
   tg?.BackButton.hide();
-  renderPanel(); toast('✅ Đã lưu hồ sơ!');
+  renderPanel(); toast('Đã lưu hồ sơ!');
 }
 
 // ── Ping ──────────────────────────────────────────────────────────────────────
@@ -1050,30 +1051,30 @@ function toggleSchForm() {
   }
 }
 async function saveSchedule() {
-  if (!S.profile) { toast('⚠️ Chưa đăng ký!'); return; }
+  if (!S.profile) { toast('Chưa đăng ký!'); return; }
   const stime = document.getElementById('sch-time').value;
   const note  = document.getElementById('sch-note').value.trim();
-  if (!stime) { toast('⚠️ Chọn thời gian!'); return; }
+  if (!stime) { toast('Chọn thời gian!'); return; }
   haptic('light');
   const d = await api('/api/schedules', 'POST', {scheduled_time: stime, note});
-  if (d.ok) { toast('✅ Đã thêm lịch!'); toggleSchForm(); document.getElementById('sch-note').value=''; loadSchedules(); }
-  else toast('⚠️ ' + (d.error || 'Lỗi'));
+  if (d.ok) { toast('Đã thêm lịch!'); toggleSchForm(); document.getElementById('sch-note').value=''; loadSchedules(); }
+  else toast(d.error || 'Lỗi');
 }
 async function deleteSchedule(id) {
   haptic('light');
   const d = await api(`/api/schedules/${id}`, 'DELETE');
-  if (d.ok) { toast('🗑️ Đã xóa'); loadSchedules(); }
+  if (d.ok) { toast('Đã xóa'); loadSchedules(); }
 }
 async function loadSchedules() {
   const list = document.getElementById('sch-list');
   const rows = await api('/api/schedules');
   if (!Array.isArray(rows) || !rows.length) {
-    list.innerHTML = `<div class="empty"><span>📅</span>Chưa có lịch nào</div>`; return;
+    list.innerHTML = `<div class="empty"><span><i class="bi bi-calendar3" style="font-size:2rem"></i></span>Chưa có lịch nào</div>`; return;
   }
   const now = Date.now() - 3600000;
   const upcoming = rows.filter(s => new Date(s.scheduled_time).getTime() >= now);
   if (!upcoming.length) {
-    list.innerHTML = `<div class="empty"><span>📅</span>Không có lịch sắp tới</div>`; return;
+    list.innerHTML = `<div class="empty"><span><i class="bi bi-calendar3" style="font-size:2rem"></i></span>Không có lịch sắp tới</div>`; return;
   }
   list.innerHTML = upcoming.map(s => {
     const dt = new Date(s.scheduled_time);
@@ -1085,7 +1086,7 @@ async function loadSchedules() {
         <span class="sch-name">${e(s.display_name)}</span>
         ${s.note ? `<span class="sch-note">${e(s.note)}</span>` : ''}
       </div>
-      ${isMe ? `<button class="sch-del" onclick="deleteSchedule(${s.id})">✕</button>` : ''}
+      ${isMe ? `<button class="sch-del" onclick="deleteSchedule(${s.id})"><i class="bi bi-trash3"></i></button>` : ''}
     </div>`;
   }).join('');
 }
@@ -1093,13 +1094,13 @@ async function loadSchedules() {
 // ── Leaderboard tab ───────────────────────────────────────────────────────────
 async function loadLeaderboard() {
   const list = document.getElementById('lb-list');
-  list.innerHTML = `<div class="empty"><span style="font-size:1.5rem">⏳</span></div>`;
+  list.innerHTML = `<div class="empty"><span><i class="bi bi-hourglass-split" style="font-size:1.5rem"></i></span></div>`;
   const rows = await api('/api/leaderboard');
   if (!Array.isArray(rows) || !rows.length) {
-    list.innerHTML = `<div class="empty"><span>🏆</span>Chưa có dữ liệu</div>`; return;
+    list.innerHTML = `<div class="empty"><span><i class="bi bi-trophy" style="font-size:2rem"></i></span>Chưa có dữ liệu</div>`; return;
   }
   list.innerHTML = rows.map((r, i) => {
-    const rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-size:.85rem;color:var(--hint)">#${i+1}</span>`;
+    const rank = i===0?'<i class="bi bi-trophy-fill" style="color:#ffd700;font-size:1.1rem"></i>':i===1?'<i class="bi bi-trophy-fill" style="color:#c0c0c0;font-size:1.1rem"></i>':i===2?'<i class="bi bi-trophy-fill" style="color:#cd7f32;font-size:1.1rem"></i>':`<span style="font-size:.85rem;color:var(--hint)">#${i+1}</span>`;
     return `<div class="lb-item">
       <span class="lb-rank">${rank}</span>
       <span class="lb-name">${e(r.name)}</span>
@@ -1113,14 +1114,14 @@ async function loadMe() {
   const p = S.profile;
   if (!p) {
     document.getElementById('me-profile-card').innerHTML =
-      `<div class="empty"><span>👤</span>Chưa đăng ký</div>`;
+      `<div class="empty"><span><i class="bi bi-person" style="font-size:2rem"></i></span>Chưa đăng ký</div>`;
     return;
   }
   const av = document.getElementById('me-av-big');
   av.textContent = initials(p.display_name);
   av.style.background = avColor(p.display_name);
   document.getElementById('me-display-name').textContent = p.display_name;
-  document.getElementById('me-ingame-name').textContent  = p.ingame_name ? `🎮 ${p.ingame_name}` : '';
+  document.getElementById('me-ingame-name').textContent  = p.ingame_name ? p.ingame_name : '';
   const tc = TIER_CLASS[p.tier] || 't5';
   const ts = TIER_STARS[p.tier] || '';
   document.getElementById('me-tier-row').innerHTML =
@@ -1130,13 +1131,13 @@ async function loadMe() {
 
   const st = await api('/api/stats');
   document.getElementById('stat-matches').textContent = st.total_matches ?? 0;
-  document.getElementById('stat-up').textContent      = `${st.thumbs_up ?? 0} 👍`;
-  document.getElementById('stat-down').textContent    = `${st.thumbs_down ?? 0} 👎`;
+  document.getElementById('stat-up').innerHTML      = `${st.thumbs_up ?? 0} <i class="bi bi-hand-thumbs-up-fill"></i>`;
+  document.getElementById('stat-down').innerHTML    = `${st.thumbs_down ?? 0} <i class="bi bi-hand-thumbs-down-fill"></i>`;
 
   const hist = await api('/api/history');
   const hlist = document.getElementById('history-list');
   if (!Array.isArray(hist) || !hist.length) {
-    hlist.innerHTML = `<div class="empty" style="padding:20px 0"><span>⚔️</span>Chưa có trận nào</div>`;
+    hlist.innerHTML = `<div class="empty" style="padding:20px 0"><span><i class="bi bi-controller" style="font-size:2rem"></i></span>Chưa có trận nào</div>`;
   } else {
     hlist.innerHTML = hist.map(m => {
       const dt   = new Date(m.matched_at + 'Z');
@@ -1155,7 +1156,7 @@ async function toggleNotify(enabled) {
   const d = await api('/api/notify-me', 'POST', {enabled});
   if (d.ok) {
     if (S.profile) S.profile.notify_me = d.notify_me;
-    toast(enabled ? '🔔 Bật thông báo!' : '🔕 Tắt thông báo');
+    toast(enabled ? 'Bật thông báo!' : 'Tắt thông báo');
   }
 }
 
