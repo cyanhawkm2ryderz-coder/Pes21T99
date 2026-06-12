@@ -259,6 +259,10 @@ def _record_match(cur, wid1, name1, wid2, name2):
 def index():
     return render_template("index.html")
 
+@app.route("/guide")
+def guide():
+    return render_template("guide.html")
+
 
 @app.route("/api/register", methods=["POST"])
 def register():

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn PES Lobby</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  background: #0f1923;
+  color: #f5f5f5;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.hero {
+  background: linear-gradient(135deg, #17212b 0%, #1a2d40 100%);
+  text-align: center;
+  padding: 40px 20px 32px;
+  border-bottom: 2px solid rgba(0,230,118,.25);
+}
+.hero .logo { font-size: 3rem; margin-bottom: 10px; }
+.hero h1 { font-size: 1.6rem; font-weight: 800; color: #00e676; margin-bottom: 6px; }
+.hero p { font-size: .92rem; color: #708499; max-width: 340px; margin: 0 auto; }
+.hero .badge {
+  display: inline-block;
+  margin-top: 14px;
+  background: rgba(0,230,118,.12);
+  border: 1px solid rgba(0,230,118,.3);
+  color: #00e676;
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+/* ── Step layout ── */
+.steps { max-width: 480px; margin: 0 auto; padding: 24px 16px 48px; }
+
+.step-block {
+  margin-bottom: 28px;
+  background: #17212b;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px 12px;
+  background: #1e2d3d;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #5288c1;
+  color: #fff;
+  font-weight: 800;
+  font-size: .88rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-num.green { background: #00e676; color: #000; }
+.step-num.red { background: #ff4d6d; }
+.step-num.gold { background: #ffd700; color: #000; }
+.step-title { font-weight: 700; font-size: .95rem; }
+.step-sub { font-size: .75rem; color: #708499; margin-top: 1px; }
+
+.step-body { padding: 14px 18px 18px; }
+.step-body p { font-size: .85rem; color: #b0bec5; line-height: 1.6; margin-bottom: 10px; }
+.step-body p:last-child { margin-bottom: 0; }
+
+/* ── Mockup phone frame ── */
+.phone-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 12px 18px 0;
+}
+.phone {
+  width: 260px;
+  background: #0d1117;
+  border-radius: 22px;
+  border: 2px solid rgba(255,255,255,.12);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+.phone-bar {
+  background: #232e3c;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.phone-bar .title { font-size: .72rem; font-weight: 700; color: #f5f5f5; }
+.phone-bar .online { font-size: .6rem; background: rgba(0,230,118,.15); color: #00e676; border: 1px solid rgba(0,230,118,.3); padding: 2px 7px; border-radius: 12px; font-weight: 600; }
+.phone-content { padding: 10px; min-height: 120px; }
+
+/* ── Mock UI elements ── */
+.m-card {
+  background: #232e3c;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.m-card.matched { border: 1px solid #00e676; }
+.m-av {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .8rem; color: #fff;
+  flex-shrink: 0; position: relative;
+}
+.m-av .dot {
+  position: absolute; bottom: 0; right: 0;
+  width: 9px; height: 9px;
+  border-radius: 50%; background: #00e676;
+  border: 2px solid #232e3c;
+}
+.m-info { flex: 1; }
+.m-name { font-size: .78rem; font-weight: 600; }
+.m-sub { font-size: .62rem; color: #708499; margin-top: 2px; }
+.m-btn {
+  font-size: .62rem; font-weight: 700;
+  padding: 5px 9px; border-radius: 7px;
+  border: 1px solid rgba(0,230,118,.4); color: #00e676;
+  background: transparent; white-space: nowrap;
+}
+.m-btn.blue { border-color: rgba(82,136,193,.4); color: #5288c1; }
+
+.m-action-row { display: flex; gap: 6px; margin-bottom: 7px; }
+.m-action {
+  flex: 1; padding: 10px 4px;
+  border-radius: 10px; text-align: center;
+  font-size: .68rem; font-weight: 700;
+}
+.m-action.blue { background: #5288c1; color: #fff; }
+.m-action.gray { background: #232e3c; color: #f5f5f5; border: 1px solid rgba(255,255,255,.1); }
+.m-action.cancel-act { background: transparent; color: #ff4d6d; border: 1px solid rgba(255,77,109,.4); }
+
+.m-link-bar {
+  background: #232e3c;
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: .68rem;
+  color: #708499;
+  margin-bottom: 7px;
+  display: flex; align-items: center; gap: 6px;
+}
+.m-link-bar .icon { font-size: .85rem; }
+.m-link-bar .text { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.m-link-bar .text.has { color: #00e676; }
+
+.m-banner {
+  background: linear-gradient(135deg, rgba(0,230,118,.1), rgba(82,136,193,.1));
+  border: 1px solid #00e676;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 7px;
+}
+.m-banner h3 { font-size: .78rem; color: #00e676; margin-bottom: 4px; }
+.m-banner p { font-size: .62rem; color: #708499; margin-bottom: 8px; }
+.m-banner-btns { display: flex; gap: 5px; justify-content: center; }
+.m-banner-btn {
+  flex: 1; padding: 7px 4px; border-radius: 8px;
+  font-size: .62rem; font-weight: 700; border: none;
+}
+.m-banner-btn.copy { background: #00e676; color: #000; }
+.m-banner-btn.end { background: transparent; color: #ff4d6d; border: 1px solid rgba(255,77,109,.4); }
+
+.m-host-note {
+  background: rgba(0,230,118,.08);
+  border: 1px solid rgba(0,230,118,.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: .65rem;
+  color: #00e676;
+  text-align: center;
+  margin-top: 5px;
+}
+
+.m-nav {
+  display: flex;
+  background: #232e3c;
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding: 6px 0 4px;
+}
+.m-nav-item {
+  flex: 1; text-align: center;
+  font-size: .55rem; color: #708499; font-weight: 600;
+}
+.m-nav-item.active { color: #5288c1; }
+.m-nav-item .ni { font-size: 1rem; display: block; margin-bottom: 1px; }
+
+/* ── Annotations / callouts ── */
+.annotated { position: relative; }
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 18px 0;
+  padding: 8px 12px;
+  background: rgba(82,136,193,.08);
+  border-left: 3px solid #5288c1;
+  border-radius: 0 8px 8px 0;
+}
+.callout.green { border-color: #00e676; background: rgba(0,230,118,.07); }
+.callout.red { border-color: #ff4d6d; background: rgba(255,77,109,.07); }
+.callout.gold { border-color: #ffd700; background: rgba(255,215,0,.07); }
+.callout .ci { font-size: .75rem; font-weight: 800; color: #5288c1; flex-shrink: 0; min-width: 16px; }
+.callout.green .ci { color: #00e676; }
+.callout.red .ci { color: #ff4d6d; }
+.callout.gold .ci { color: #ffd700; }
+.callout .ct { font-size: .78rem; color: #b0bec5; line-height: 1.5; }
+.callout .ct b { color: #f5f5f5; }
+.callout:last-child { margin-bottom: 14px; }
+
+/* ── Tip box ── */
+.tip-box {
+  background: rgba(255,215,0,.07);
+  border: 1px solid rgba(255,215,0,.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 10px 18px 14px;
+  font-size: .8rem;
+  color: #e0c060;
+  line-height: 1.6;
+}
+.tip-box .tip-title { font-weight: 700; font-size: .82rem; margin-bottom: 4px; color: #ffd700; }
+
+/* ── Highlight tags ── */
+.tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 5px;
+  font-size: .72rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.tag.green { background: rgba(0,230,118,.15); color: #00e676; }
+.tag.blue { background: rgba(82,136,193,.15); color: #5288c1; }
+.tag.red { background: rgba(255,77,109,.12); color: #ff6b8a; }
+.tag.gold { background: rgba(255,215,0,.12); color: #ffd700; }
+
+/* ── Section divider ── */
+.section-div {
+  text-align: center;
+  padding: 8px 0 20px;
+  color: #708499;
+  font-size: .75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 24px 16px 40px;
+  color: #708499;
+  font-size: .78rem;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+footer .logo { font-size: 1.5rem; margin-bottom: 6px; }
+footer b { color: #00e676; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="logo">⚽</div>
+  <h1>PES Lobby — Hướng dẫn</h1>
+  <p>Tìm đối thủ, kết nối Parsec và bắt đầu trận chỉ trong vài bước</p>
+  <div class="badge">📱 Mở trong Telegram Mini App</div>
+</div>
+
+<div class="steps">
+
+  <!-- BƯỚC 1 — Nhập Parsec link -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Nhập Parsec Link của bạn</div>
+        <div class="step-sub">Bắt buộc nếu bạn là Host</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone annotated">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 3 online</span>
+        </div>
+        <div class="phone-content">
+          <div class="m-link-bar">
+            <span class="icon">🔗</span>
+            <span class="text has">parsec.app/r/abc123xyz</span>
+            <span style="font-size:.6rem;color:#708499">✏️</span>
+          </div>
+          <div class="m-link-bar" style="opacity:.4;margin-bottom:0">
+            <span class="icon">🔗</span>
+            <span class="text">Chưa có link — nhấn để thêm</span>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item active"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout green">
+      <span class="ci">→</span>
+      <span class="ct">Nhấn vào thanh link → nhập link Parsec của bạn → <b>Lưu</b></span>
+    </div>
+    <div class="callout">
+      <span class="ci">i</span>
+      <span class="ct">Không có link? Bạn là <b>Guest</b> — cần có người Host để kết nối vào</span>
+    </div>
+    <div class="tip-box">
+      <div class="tip-title">📌 Lấy Parsec Link ở đâu?</div>
+      Mở Parsec → <b>Computers</b> → chọn máy tính của bạn → <b>Copy Link</b>. Link có dạng <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">parsec.app/r/xxxxxx</code>
+    </div>
+  </div>
+
+  <!-- BƯỚC 2 — Vào danh sách / tìm trận -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num green">2</div>
+      <div>
+        <div class="step-title">Tham gia tìm trận</div>
+        <div class="step-sub">Chọn thủ công hoặc tự động ghép</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 3 online</span>
+        </div>
+        <div class="phone-content">
+          <div class="m-action-row">
+            <div class="m-action gray">📋 Danh sách chờ</div>
+            <div class="m-action blue">⚡ Ghép Random</div>
+          </div>
+          <div style="font-size:.6rem;color:#708499;margin-bottom:8px;text-align:center">Đang chờ đối thủ...</div>
+          <div class="m-action-row">
+            <div class="m-action cancel-act">✖ Huỷ tìm trận</div>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item active"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="ci">①</span>
+      <span class="ct"><b>Danh sách chờ</b> — Tên bạn hiện ra lobby, chờ ai đó nhấn "Thách đấu" bạn</span>
+    </div>
+    <div class="callout green">
+      <span class="ci">②</span>
+      <span class="ct"><b>Ghép Random</b> — Bot tự động ghép bạn với người đang chờ. Nhanh nhất!</span>
+    </div>
+    <div class="callout red">
+      <span class="ci">✖</span>
+      <span class="ct"><b>Huỷ tìm trận</b> — Thoát khỏi danh sách chờ</span>
+    </div>
+  </div>
+
+  <!-- BƯỚC 3 — Xem danh sách & thách đấu thủ công -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Thách đấu thủ công</div>
+        <div class="step-sub">Chọn đối thủ trong danh sách lobby</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 4 online</span>
+        </div>
+        <div class="phone-content">
+          <div class="m-card">
+            <div class="m-av" style="background:#5288c1">
+              N<div class="dot"></div>
+            </div>
+            <div class="m-info">
+              <div class="m-name">NguyenVanA</div>
+              <div class="m-sub">
+                <span style="background:rgba(0,230,118,.12);color:#00e676;padding:1px 5px;border-radius:4px;font-size:.58rem;font-weight:700">HOST</span>
+                <span style="margin-left:4px">PES2021 · chờ 2 phút</span>
+              </div>
+            </div>
+            <div class="m-btn">Thách đấu</div>
+          </div>
+          <div class="m-card">
+            <div class="m-av" style="background:#e67e22">
+              T<div class="dot"></div>
+            </div>
+            <div class="m-info">
+              <div class="m-name">TrungPS4</div>
+              <div class="m-sub">
+                <span style="background:rgba(255,77,109,.1);color:#ff6b8a;padding:1px 5px;border-radius:4px;font-size:.58rem;font-weight:700">GUEST</span>
+                <span style="margin-left:4px">PES2021 · chờ 5 phút</span>
+              </div>
+            </div>
+            <div class="m-btn">Thách đấu</div>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item active"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout green">
+      <span class="ci">→</span>
+      <span class="ct">Nhấn <b>Thách đấu</b> vào người có tag <span class="tag green">HOST</span> để kết nối vào phòng của họ</span>
+    </div>
+    <div class="callout">
+      <span class="ci">i</span>
+      <span class="ct">Tag <span class="tag green">HOST</span> = có Parsec Link, <span class="tag red">GUEST</span> = chưa có link (cần bạn là host)</span>
+    </div>
+  </div>
+
+  <!-- BƯỚC 4 — Đã ghép xong (Guest) -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num green">4</div>
+      <div>
+        <div class="step-title">Đã ghép! — Copy link Parsec (Guest)</div>
+        <div class="step-sub">Khi có đối thủ, banner xanh hiện lên</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 4 online</span>
+        </div>
+        <div class="phone-content">
+          <div class="m-banner">
+            <h3>⚔️ Trận đấu bắt đầu!</h3>
+            <p>Đối thủ: <b style="color:#f5f5f5">NguyenVanA</b></p>
+            <div class="m-banner-btns">
+              <button class="m-banner-btn copy">📋 Copy Parsec</button>
+              <button class="m-banner-btn end">🔴 Kết thúc</button>
+            </div>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item active"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout green">
+      <span class="ci">①</span>
+      <span class="ct">Nhấn <b>📋 Copy Parsec</b> → link được copy vào clipboard</span>
+    </div>
+    <div class="callout green">
+      <span class="ci">②</span>
+      <span class="ct">Mở Parsec → dán link → <b>Connect</b> để vào phòng Host</span>
+    </div>
+    <div class="callout red">
+      <span class="ci">③</span>
+      <span class="ct">Nhấn <b>🔴 Kết thúc trận</b> khi xong để trả lại trạng thái sẵn sàng</span>
+    </div>
+  </div>
+
+  <!-- BƯỚC 5 — Host nhận thông báo -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num gold">5</div>
+      <div>
+        <div class="step-title">Host — Mở Parsec & Accept</div>
+        <div class="step-sub">Bot sẽ nhắn riêng cho bạn</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 4 online</span>
+        </div>
+        <div class="phone-content">
+          <div class="m-banner">
+            <h3>⚔️ Trận đấu bắt đầu!</h3>
+            <p>Đối thủ: <b style="color:#f5f5f5">TrungPS4</b></p>
+            <div class="m-host-note">🏠 Bạn đang <b>host</b> — mở Parsec và <b>Accept</b> khi đối thủ vào!</div>
+            <div style="margin-top:8px">
+              <button class="m-banner-btn end" style="width:100%">🔴 Kết thúc trận</button>
+            </div>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item active"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout gold">
+      <span class="ci">⚡</span>
+      <span class="ct">Bot <b>nhắn tin riêng cho Host</b> ngay khi ghép xong — thông báo mở Parsec</span>
+    </div>
+    <div class="callout gold">
+      <span class="ci">⚡</span>
+      <span class="ct">Khi Guest copy link, bot <b>nhắn lại lần nữa</b> — "chuẩn bị Accept!"</span>
+    </div>
+    <div class="callout green">
+      <span class="ci">→</span>
+      <span class="ct">Host chỉ cần mở Parsec → chờ → nhấn <b>Accept</b> khi thấy Request</span>
+    </div>
+  </div>
+
+  <!-- BƯỚC 6 — Tab lịch -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <div>
+        <div class="step-title">Tab Lịch — Đặt giờ đá</div>
+        <div class="step-sub">Hẹn giờ để mọi người biết bạn rảnh</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 4 online</span>
+        </div>
+        <div class="phone-content">
+          <div style="text-align:center;margin-bottom:8px">
+            <div style="background:#5288c1;color:#fff;font-size:.72rem;font-weight:700;padding:9px;border-radius:10px">
+              📅 + Đặt lịch mới
+            </div>
+          </div>
+          <div class="m-card" style="margin-bottom:6px">
+            <div style="font-size:1.2rem">📅</div>
+            <div class="m-info">
+              <div class="m-name" style="font-size:.75rem">Tối nay 20:00 – 22:00</div>
+              <div class="m-sub">Ghi chú: ai đá không nhắn tao</div>
+            </div>
+            <div style="font-size:.7rem;color:#ff4d6d;cursor:pointer">Xoá</div>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item active"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="ci">→</span>
+      <span class="ct">Nhấn <b>+ Đặt lịch mới</b> → chọn giờ bắt đầu/kết thúc → thêm ghi chú</span>
+    </div>
+    <div class="callout">
+      <span class="ci">i</span>
+      <span class="ct">Lịch của tất cả mọi người hiện ở đây — dễ hẹn giờ với nhau</span>
+    </div>
+  </div>
+
+  <!-- BƯỚC 7 — Tab BXH -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num gold">7</div>
+      <div>
+        <div class="step-title">Tab BXH — Bảng xếp hạng</div>
+        <div class="step-sub">Ai đá nhiều, ai được thích nhất</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 4 online</span>
+        </div>
+        <div class="phone-content">
+          <div class="m-card" style="margin-bottom:5px">
+            <div style="font-size:1.1rem;width:24px;text-align:center">🥇</div>
+            <div class="m-info">
+              <div class="m-name" style="font-size:.75rem">NguyenVanA</div>
+              <div class="m-sub">12 trận · 👍 24</div>
+            </div>
+          </div>
+          <div class="m-card" style="margin-bottom:5px">
+            <div style="font-size:1.1rem;width:24px;text-align:center">🥈</div>
+            <div class="m-info">
+              <div class="m-name" style="font-size:.75rem">TrungPS4</div>
+              <div class="m-sub">9 trận · 👍 18</div>
+            </div>
+          </div>
+          <div class="m-card">
+            <div style="font-size:1.1rem;width:24px;text-align:center">🥉</div>
+            <div class="m-info">
+              <div class="m-name" style="font-size:.75rem">MinhCuong</div>
+              <div class="m-sub">7 trận · 👍 15</div>
+            </div>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item active"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout gold">
+      <span class="ci">→</span>
+      <span class="ct">Xếp hạng theo <b>số trận đã đá</b> và <b>số lượt thích</b> từ đối thủ</span>
+    </div>
+    <div class="callout">
+      <span class="ci">i</span>
+      <span class="ct">Sau mỗi trận, nhớ nhấn 👍/👎 đánh giá đối thủ — giúp lọc người chơi tốt</span>
+    </div>
+  </div>
+
+  <!-- BƯỚC 8 — Tab Tôi -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">8</div>
+      <div>
+        <div class="step-title">Tab Tôi — Cài đặt cá nhân</div>
+        <div class="step-sub">Thông tin và bật thông báo</div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
+          <span class="online">● 4 online</span>
+        </div>
+        <div class="phone-content">
+          <div class="m-card" style="margin-bottom:8px">
+            <div class="m-av" style="background:#e74c3c">
+              M<div class="dot"></div>
+            </div>
+            <div class="m-info">
+              <div class="m-name">MinhCuong</div>
+              <div class="m-sub">7 trận · 👍 15 · 👎 1</div>
+            </div>
+          </div>
+          <div style="background:#232e3c;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:.75rem;font-weight:600">🔔 Thông báo khi có người vào</div>
+              <div style="font-size:.62rem;color:#708499;margin-top:2px">Bot DM bạn khi có người tìm trận</div>
+            </div>
+            <div style="width:36px;height:20px;background:#00e676;border-radius:10px;position:relative">
+              <div style="position:absolute;right:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="m-nav">
+          <div class="m-nav-item"><span class="ni">🏠</span>Lobby</div>
+          <div class="m-nav-item"><span class="ni">📅</span>Lịch</div>
+          <div class="m-nav-item"><span class="ni">🏆</span>BXH</div>
+          <div class="m-nav-item active"><span class="ni">👤</span>Tôi</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout green">
+      <span class="ci">🔔</span>
+      <span class="ct">Bật <b>Thông báo</b> để bot DM bạn khi có người vào lobby tìm trận</span>
+    </div>
+    <div class="callout">
+      <span class="ci">i</span>
+      <span class="ct">Xem lại lịch sử các trận đã đá và đánh giá của đối thủ tại đây</span>
+    </div>
+  </div>
+
+  <!-- TÓM TẮT -->
+  <div class="section-div">— Tóm tắt nhanh —</div>
+
+  <div style="background:#17212b;border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.06);margin-bottom:16px">
+    <div style="font-size:.88rem;font-weight:700;margin-bottom:14px;color:#f5f5f5">🚀 Quy trình đá 1 trận</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="width:24px;height:24px;border-radius:50%;background:#5288c1;color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Nhập Parsec Link (nếu là Host) hoặc bỏ qua (nếu là Guest)</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="width:24px;height:24px;border-radius:50%;background:#5288c1;color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Nhấn <b style="color:#fff">Ghép Random</b> hoặc vào danh sách chờ → <b style="color:#fff">Danh sách chờ</b></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="width:24px;height:24px;border-radius:50%;background:#00e676;color:#000;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Banner xanh hiện lên → <b style="color:#fff">Guest copy Parsec link</b> → <b style="color:#fff">Host mở Parsec & Accept</b></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="width:24px;height:24px;border-radius:50%;background:#ffd700;color:#000;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Đá xong → nhấn <b style="color:#ff4d6d">🔴 Kết thúc trận</b> → đánh giá đối thủ 👍/👎</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box" style="margin:0 0 16px">
+    <div class="tip-title">💡 Mẹo</div>
+    Bật thông báo ở tab <b>👤 Tôi</b> để bot tự nhắn khi có người vào lobby — không cần ngồi chờ mở app!
+  </div>
+
+</div>
+
+<footer>
+  <div class="logo">⚽</div>
+  <div><b>PES Lobby</b> — Tìm trận nhanh qua Telegram</div>
+  <div style="margin-top:4px;font-size:.72rem">Mở trong Telegram → <b style="color:#5288c1">@pes21t99bot</b></div>
+</footer>
+
+</body>
+</html>
