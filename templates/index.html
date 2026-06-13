@@ -698,7 +698,7 @@ function buildCard(p) {
 
   const hostTag = p.parsec_link
     ? `<span class="htag has-host"><i class="bi bi-check-circle-fill"></i> HOST</span>`
-    : `<span class="htag no-host"><i class="bi bi-x-circle-fill"></i> GUEST</span>`;
+    : `<span class="htag no-host"><i class="bi bi-x-circle-fill"></i> NO HOST</span>`;
 
   const parsecShort = p.parsec_link
     ? `<span class="c-parsec">${p.parsec_link.replace('https://','').replace('parsec.gg/g/','').slice(0,18)}…</span>`
