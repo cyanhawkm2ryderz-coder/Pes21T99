@@ -99,7 +99,7 @@ async def _notify_subscribers(entering_name, entering_wid):
             await _bot_send(wid[3:],
                 f"🔔 *{entering_name}* vào lobby tìm đối!\n\nMở app để ghép trận ngay!")
 
-COOLDOWN_ALL_HOURS = 6
+COOLDOWN_ALL_HOURS = 2
 
 async def _broadcast_all(sender_wid, text):
     if not _bot_app:
