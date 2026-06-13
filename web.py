@@ -310,6 +310,7 @@ def ping():
         return jsonify({"error": "not found"}), 404
     now    = datetime.now().isoformat()
     cutoff = (datetime.now() - timedelta(seconds=60)).isoformat()
+    was_idle = player.get("status") not in ("busy", "pending_match", "waiting")
     conn = get_db()
     try:
         with conn.cursor() as cur:
@@ -324,6 +325,9 @@ def ping():
         conn.commit()
     finally:
         conn.close()
+    if was_idle:
+        _fire(_send_lobby_notify(player["display_name"]))
+        _fire(_notify_subscribers(player["display_name"], wid))
     return jsonify({"online": count})
 
 
