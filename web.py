@@ -349,6 +349,7 @@ def status():
         "is_ready":     player["is_ready"],
         "matched_with": player["matched_with"],
         "match_link":   player["match_link"],
+        "status":       player.get("status", "idle"),
     }
     if player["matched_with"]:
         opp = get_player(player["matched_with"])
@@ -458,14 +459,44 @@ def cancel():
     return jsonify({"ok": True})
 
 
+@app.route("/api/decline", methods=["POST"])
+def decline():
+    wid, me = auth(request)
+    if not me:
+        return jsonify({"error": "Chưa đăng ký"}), 401
+    opp_wid = me.get("matched_with")
+    conn = get_db()
+    try:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("""
+                UPDATE players
+                SET is_ready=0, matched_with=NULL, match_link=NULL, status='idle'
+                WHERE web_id=%s
+            """, (wid,))
+            if opp_wid:
+                cur.execute("""
+                    UPDATE players
+                    SET is_ready=1, matched_with=NULL, match_link=NULL, status='waiting'
+                    WHERE web_id=%s
+                """, (opp_wid,))
+        conn.commit()
+    finally:
+        conn.close()
+    if opp_wid:
+        name = me.get("display_name", "Ai đó")
+        _fire(_bot_send(opp_wid[3:] if opp_wid.startswith("tg_") else opp_wid,
+            f"😔 *{name}* vừa từ chối trận với bạn.\n\nBạn đã được đưa trở lại hàng chờ!"))
+    return jsonify({"ok": True})
+
+
 @app.route("/api/connect", methods=["POST"])
 def connect():
     wid, me = auth(request)
     if not me:
         return jsonify({"error": "Chưa đăng ký"}), 401
+    import random as _random
     d          = request.json or {}
     target_wid = d.get("target_id", "")
-    host       = d.get("host", "them")
     conn = get_db()
     try:
         with conn.cursor(row_factory=dict_row) as cur:
@@ -477,8 +508,18 @@ def connect():
             if not target:
                 return jsonify({"error": "Slot đã bị khoá!"}), 409
             target = dict(target)
-            link_for_me     = target["parsec_link"] if host == "them" else None
-            link_for_target = me["parsec_link"]     if host == "me"   else None
+            my_link     = me.get("parsec_link") or ""
+            target_link = target.get("parsec_link") or ""
+            # Both have host → random pick; else whoever has link is host
+            if my_link and target_link:
+                if _random.random() < 0.5:
+                    link_for_me, link_for_target, host = target_link, None, "them"
+                else:
+                    link_for_me, link_for_target, host = None, my_link, "me"
+            elif target_link:
+                link_for_me, link_for_target, host = target_link, None, "them"
+            else:
+                link_for_me, link_for_target, host = None, my_link, "me"
             now = datetime.now().isoformat()
             cur.execute(
                 "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
@@ -492,7 +533,6 @@ def connect():
         conn.commit()
     finally:
         conn.close()
-    # DM host: host="them" → target host, host="me" → tôi host
     if host == "them":
         _fire(_dm_host(target_wid, me["display_name"]))
     else:

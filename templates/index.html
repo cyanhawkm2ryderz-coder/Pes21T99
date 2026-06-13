@@ -122,15 +122,15 @@ header h1 span{color:var(--accent)}
 .busy-tag{background:rgba(255,77,109,.12);color:var(--red);font-size:.65rem;font-weight:700;
   padding:1px 6px;border-radius:5px}
 .timer-tag{font-size:.65rem;color:var(--hint);margin-left:2px}
-.c-ingame{cursor:pointer;user-select:none}
+.c-name-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px}
+.c-parsec{font-size:.68rem;color:var(--accent);font-family:monospace}
+.c-ig-sep{color:var(--hint);font-size:.65rem}
+.c-ingame{cursor:pointer;user-select:none;font-size:.68rem;color:var(--hint)}
 .c-ingame:active{opacity:.6}
-.c-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
-.btn-h{padding:6px 11px;border-radius:8px;border:1px solid var(--border);
-  background:transparent;font-size:.7rem;font-weight:600;
-  cursor:pointer;touch-action:manipulation;white-space:nowrap}
-.btn-h.them{border-color:rgba(0,230,118,.4);color:var(--accent)}
-.btn-h.me{border-color:rgba(82,136,193,.4);color:var(--link)}
-.btn-h:active{opacity:.7;transform:scale(.95)}
+.btn-challenge{flex-shrink:0;padding:9px 14px;border-radius:10px;border:none;
+  background:var(--accent);color:#000;font-size:.78rem;font-weight:800;
+  cursor:pointer;touch-action:manipulation;white-space:nowrap;align-self:center}
+.btn-challenge:active{opacity:.7;transform:scale(.95)}
 
 /* ── Link bar ── */
 #link-bar{display:none;background:var(--surface);border-radius:12px;
@@ -296,6 +296,31 @@ header h1 span{color:var(--accent)}
   font-size:.85rem;cursor:pointer;touch-action:manipulation}
 .mc-timer{font-size:.68rem;color:var(--hint);margin-top:8px}
 
+/* ── Pending match popup ── */
+#pending-overlay{display:none;position:fixed;inset:0;z-index:600;
+  background:rgba(0,0,0,.88);align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#pending-overlay.show{display:flex}
+#pending-card{background:var(--surface);border:1.5px solid var(--btn);
+  border-radius:22px;padding:28px 20px 22px;text-align:center;
+  width:calc(100% - 40px);max-width:300px;
+  animation:mpop .35s cubic-bezier(.175,.885,.32,1.275) both}
+.pc-ring{width:68px;height:68px;border-radius:50%;background:rgba(82,136,193,.12);
+  border:2px solid rgba(82,136,193,.4);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;animation:mring 1s .3s ease-in-out infinite alternate}
+.pc-title{font-size:1.1rem;font-weight:800;color:var(--btn);margin-bottom:4px}
+.pc-sub{font-size:.78rem;color:var(--hint);margin-bottom:4px}
+.pc-opp{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.pc-info{font-size:.76rem;color:var(--hint);margin-bottom:18px;line-height:1.5}
+.pc-btns{display:flex;gap:10px;margin-bottom:0}
+.pc-accept{flex:1;padding:13px;border-radius:12px;border:none;
+  background:var(--accent);color:#000;font-weight:800;font-size:.9rem;
+  cursor:pointer;touch-action:manipulation}
+.pc-decline{flex:1;padding:13px;border-radius:12px;
+  border:1px solid rgba(255,77,109,.4);background:transparent;
+  color:var(--red);font-weight:700;font-size:.9rem;
+  cursor:pointer;touch-action:manipulation}
+
 /* ── Toast ── */
 #toast{position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);
   left:50%;transform:translateX(-50%) translateY(10px);
@@ -368,6 +393,18 @@ header h1 span{color:var(--accent)}
         font-size:.82rem;font-weight:600;cursor:pointer"><i class="bi bi-stop-circle"></i> Kết thúc trận</button>
     </div>
 
+    <div id="notify-bar" style="display:none;background:var(--surface);border-radius:12px;
+      padding:10px 14px;margin-bottom:10px;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:.82rem;font-weight:600"><i class="bi bi-bell-fill" style="color:var(--accent)"></i> Thông báo lobby</div>
+        <div style="font-size:.7rem;color:var(--hint);margin-top:2px">Bot nhắn khi có người tìm trận</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="notify-toggle" onchange="toggleNotify(this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
     <div class="section-label">Đang tìm đối</div>
     <div id="lobby">
       <div class="empty"><span><i class="bi bi-moon-stars" style="font-size:2rem"></i></span>Chưa có ai tìm đối</div>
@@ -379,29 +416,6 @@ header h1 span{color:var(--accent)}
     </div>
 
   </div><!-- /panel-lobby -->
-
-  <!-- ══ TAB: LỊCH ══ -->
-  <div id="panel-schedule" class="tab-panel">
-    <button class="sch-add-btn" onclick="toggleSchForm()"><i class="bi bi-plus-circle-fill"></i> Thêm lịch online</button>
-    <div class="sch-form" id="sch-form">
-      <div class="fgrp">
-        <label>Thời gian</label>
-        <input type="datetime-local" id="sch-time">
-      </div>
-      <div class="fgrp">
-        <label>Ghi chú <small style="color:var(--hint)">(tùy chọn)</small></label>
-        <input id="sch-note" placeholder="VD: tối nay rảnh từ 8h" maxlength="80">
-      </div>
-      <div class="sch-form-btns">
-        <button class="sch-save-btn"   onclick="saveSchedule()"><i class="bi bi-check-lg"></i> Lưu</button>
-        <button class="sch-cancel-btn" onclick="toggleSchForm()">Hủy</button>
-      </div>
-    </div>
-    <div class="section-label">Lịch online sắp tới</div>
-    <div id="sch-list">
-      <div class="empty"><span><i class="bi bi-calendar3" style="font-size:2rem"></i></span>Chưa có lịch nào</div>
-    </div>
-  </div>
 
   <!-- ══ TAB: BXH ══ -->
   <div id="panel-leaderboard" class="tab-panel">
@@ -439,19 +453,6 @@ header h1 span{color:var(--accent)}
       <button class="edit-profile-btn" onclick="openSheet()"><i class="bi bi-pencil-square"></i> Chỉnh hồ sơ</button>
     </div>
 
-    <div class="me-card">
-      <div class="toggle-row">
-        <div>
-          <div class="toggle-label"><i class="bi bi-bell-fill" style="color:var(--accent)"></i> Thông báo khi có người vào lobby</div>
-          <div class="toggle-hint">Bot Telegram sẽ nhắn tin cho bạn</div>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="notify-toggle" onchange="toggleNotify(this.checked)">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    </div>
-
     <div class="me-card" id="history-card">
       <div class="section-label" style="margin-bottom:10px">Lịch sử trận đấu</div>
       <div id="history-list">
@@ -466,9 +467,6 @@ header h1 span{color:var(--accent)}
 <nav id="bottom-nav">
   <button class="tab-btn active" data-tab="lobby"       onclick="switchTab('lobby')">
     <i class="bi bi-controller ti"></i>Lobby
-  </button>
-  <button class="tab-btn" data-tab="schedule"    onclick="switchTab('schedule')">
-    <i class="bi bi-calendar3 ti"></i>Lịch
   </button>
   <button class="tab-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
     <i class="bi bi-trophy ti"></i>BXH
@@ -501,6 +499,21 @@ header h1 span{color:var(--accent)}
     <button id="mc-rematch" style="display:none" onclick="sendRematch()"><i class="bi bi-arrow-repeat"></i> Thách đấu lại</button>
     <button id="mc-close" onclick="closeMatchOverlay()">Đã hiểu</button>
     <div class="mc-timer" id="mc-timer"></div>
+  </div>
+</div>
+
+<!-- Pending match popup -->
+<div id="pending-overlay">
+  <div id="pending-card">
+    <div class="pc-ring"><i class="bi bi-controller" style="font-size:1.8rem;color:var(--btn)"></i></div>
+    <div class="pc-title">Tìm được đối thủ!</div>
+    <div class="pc-sub">Đấu với</div>
+    <div class="pc-opp" id="pc-opp-name">—</div>
+    <div class="pc-info" id="pc-info"></div>
+    <div class="pc-btns">
+      <button class="pc-accept" onclick="acceptMatch()"><i class="bi bi-check-lg"></i> Chấp nhận</button>
+      <button class="pc-decline" onclick="declineMatch()"><i class="bi bi-x-lg"></i> Từ chối</button>
+    </div>
   </div>
 </div>
 
@@ -556,9 +569,10 @@ const TIER_STARS = {'Tier 1':'⭐⭐⭐⭐⭐','Tier 2':'⭐⭐⭐⭐','Tier 3':
 const TIER_CLASS = {'Tier 1':'t1','Tier 2':'t2','Tier 3':'t3','Tier 4':'t4','Tier 5':'t5'};
 const AV_COLORS  = ['#ef5350','#e91e63','#9c27b0','#3f51b5','#2196f3','#009688','#4caf50','#ff9800','#ff5722'];
 
-let S = { webId: null, profile: null, ready: false, matched: false };
+let S = { webId: null, profile: null, ready: false, matched: false, pendingMatch: false };
 let _currentOpponentId = null;
 let _rated = false;
+let _autoTimeout = null;
 
 function avColor(n) {
   let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))%AV_COLORS.length;
@@ -588,7 +602,6 @@ function switchTab(tab) {
   haptic('light');
   if (tab === 'leaderboard') loadLeaderboard();
   if (tab === 'me')          loadMe();
-  if (tab === 'schedule')    loadSchedules();
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
@@ -601,6 +614,12 @@ async function boot() {
     else { if (!tgUser) { localStorage.removeItem('pes_id'); S.webId = null; } }
   }
 
+  await refreshLobby();
+  pingOnline();
+  setInterval(refreshLobby, 3000);
+  setInterval(checkStatus,  2500);
+  setInterval(pingOnline,   10000);
+
   if (!S.profile) {
     if (tgUser) {
       const fullName = [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ');
@@ -609,12 +628,6 @@ async function boot() {
     }
     openSheet(true);
   }
-
-  await refreshLobby();
-  pingOnline();
-  setInterval(refreshLobby, 3000);
-  setInterval(checkStatus,  2500);
-  setInterval(pingOnline,   10000);
 }
 
 // ── Panel ──────────────────────────────────────────────────────────────────────
@@ -629,6 +642,10 @@ function renderPanel() {
   ab.style.background = avColor(p.display_name);
   ab.style.display = 'flex';
   updateSub(); syncMainButton(); updateActionRow(); renderLinkBar();
+  const nb = document.getElementById('notify-bar');
+  if (nb) { nb.style.display = 'flex'; }
+  const nt = document.getElementById('notify-toggle');
+  if (nt && p.notify_me !== undefined) nt.checked = !!p.notify_me;
 }
 
 function updateSub() {
@@ -722,34 +739,37 @@ function buildCard(p) {
   }
 
   const canConnect = !!S.profile && p.web_id !== myId;
-  const tLink = (p.parsec_link || '').replace(/'/g,"\\'");
-  const actions = canConnect
-    ? `<div class="c-actions">
-        <button class="btn-h them" onclick="connect('${p.web_id}','them','${tLink}')">Host bạn</button>
-        <button class="btn-h me"   onclick="connect('${p.web_id}','me','${tLink}')">Host tôi</button>
-       </div>`
-    : `<div class="c-actions" style="font-size:.85rem;color:var(--hint)"><i class="bi bi-three-dots"></i></div>`;
 
   const hostTag = p.parsec_link
-    ? `<span class="htag has-host"><i class="bi bi-check-circle-fill"></i> Có Host</span>`
-    : `<span class="htag no-host"><i class="bi bi-x-circle-fill"></i> No Host</span>`;
+    ? `<span class="htag has-host"><i class="bi bi-check-circle-fill"></i> HOST</span>`
+    : `<span class="htag no-host"><i class="bi bi-x-circle-fill"></i> GUEST</span>`;
+
+  const parsecShort = p.parsec_link
+    ? `<span class="c-parsec">${p.parsec_link.replace('https://','').replace('parsec.gg/g/','').slice(0,18)}…</span>`
+    : `<span class="c-parsec" style="color:var(--hint)">Chưa có link</span>`;
 
   const igLine = p.ingame_name
-    ? `<br><span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID"><i class="bi bi-joystick"></i> ${e(p.ingame_name)} <i class="bi bi-clipboard" style="font-size:.6rem"></i></span>`
+    ? `<span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID"><i class="bi bi-joystick"></i> ${e(p.ingame_name)}</span>`
+    : '';
+
+  const challengeBtn = canConnect
+    ? `<button class="btn-challenge" onclick="connect('${p.web_id}')">Thách đấu</button>`
     : '';
 
   return `<div class="card">
     <div class="c-av" style="background:${color}">${ini}<div class="dot"></div></div>
     <div class="c-info">
-      <div class="c-name">${e(p.display_name)}</div>
-      <div class="c-sub">
-        <span class="tbadge ${tc}">${ts} ${p.tier}</span>
+      <div class="c-name-row">
+        <span class="c-name">${e(p.display_name)}</span>
         ${hostTag}
+      </div>
+      <div class="c-sub">
+        ${parsecShort}
         ${wt ? `<span class="timer-tag"><i class="bi bi-clock"></i> ${wt}</span>` : ''}
-        ${igLine}
+        ${igLine ? `<span class="c-ig-sep"> · </span>${igLine}` : ''}
       </div>
     </div>
-    ${actions}
+    ${challengeBtn}
   </div>`;
 }
 
@@ -779,7 +799,7 @@ function copyIngame(name) {
 let _matchTimer;
 
 function showMatchBanner(opponentName, link, opponentId) {
-  S.matched = true; S.ready = false; _rated = false; _hostNotified = false;
+  S.matched = true; S.ready = false; S.pendingMatch = false; _rated = false; _hostNotified = false;
   _currentOpponentId = opponentId || null;
   haptic('heavy'); playMatchSound();
   updateSub(); syncMainButton(); updateActionRow();
@@ -852,12 +872,47 @@ async function sendRematch() {
   toast(d.ok ? 'Đã gửi thách đấu!' : (d.msg || 'Không gửi được'));
 }
 
+// ── Pending match popup ────────────────────────────────────────────────────────
+let _pendingOpponent = null;
+let _pendingLink     = null;
+let _pendingOppId    = null;
+
+function showPendingPopup(name, link, oppId) {
+  if (S.pendingMatch || S.matched) return;
+  S.pendingMatch = true;
+  _pendingOpponent = name; _pendingLink = link; _pendingOppId = oppId;
+  haptic('heavy'); playMatchSound();
+  document.getElementById('pc-opp-name').textContent = name || '—';
+  const info = link
+    ? `<i class="bi bi-house-fill" style="color:var(--accent)"></i> Bạn là <b>Guest</b> — sẽ nhận link Parsec của họ`
+    : `<i class="bi bi-house-fill" style="color:var(--accent)"></i> Bạn là <b>Host</b> — mở Parsec sau khi chấp nhận`;
+  document.getElementById('pc-info').innerHTML = info;
+  document.getElementById('pending-overlay').classList.add('show');
+}
+
+function acceptMatch() {
+  haptic('medium');
+  document.getElementById('pending-overlay').classList.remove('show');
+  showMatchBanner(_pendingOpponent, _pendingLink, _pendingOppId);
+  _pendingOpponent = null; _pendingLink = null; _pendingOppId = null;
+}
+
+async function declineMatch() {
+  haptic('light');
+  document.getElementById('pending-overlay').classList.remove('show');
+  S.pendingMatch = false; S.ready = false;
+  updateSub(); syncMainButton(); updateActionRow();
+  await api('/api/decline', 'POST', {});
+  toast('Đã từ chối trận'); refreshLobby();
+  _pendingOpponent = null; _pendingLink = null; _pendingOppId = null;
+}
+
 // ── Status poll ────────────────────────────────────────────────────────────────
 async function checkStatus() {
   if (!S.webId || S.matched) return;
   const s = await api('/api/status');
-  if (s.matched_with && !S.matched) {
-    showMatchBanner(s.opponent_name || '', s.match_link || '', s.opponent_id || '');
+  if (s.matched_with && !S.matched && !S.pendingMatch) {
+    showPendingPopup(s.opponent_name || '', s.match_link || '', s.opponent_id || '');
   }
 }
 
@@ -869,15 +924,27 @@ async function doReady(auto) {
   document.getElementById('match-banner').style.display = 'none';
   updateSub(); syncMainButton(); updateActionRow();
   toast(auto ? 'Đang tự ghép...' : 'Đã vào lobby...');
+  if (auto) {
+    clearTimeout(_autoTimeout);
+    _autoTimeout = setTimeout(() => {
+      if (S.ready && !S.matched && !S.pendingMatch) {
+        cancelReady();
+        toast('Hết 2 phút — tự hủy tìm trận');
+      }
+    }, 120000);
+  }
   const d = await api('/api/ready', 'POST', {auto});
   if (d.matched) {
-    showMatchBanner(d.opponent || '', d.link || '', d.opponent_id || '');
+    clearTimeout(_autoTimeout);
+    showPendingPopup(d.opponent || '', d.link || '', d.opponent_id || '');
   }
   refreshLobby();
 }
 
 async function cancelReady() {
-  haptic('light'); S.ready = false;
+  haptic('light'); S.ready = false; S.pendingMatch = false;
+  clearTimeout(_autoTimeout);
+  document.getElementById('pending-overlay').classList.remove('show');
   updateSub(); syncMainButton(); updateActionRow();
   await api('/api/cancel', 'POST', {});
   toast('Đã hủy'); refreshLobby();
@@ -885,7 +952,8 @@ async function cancelReady() {
 
 async function endMatch() {
   haptic('light');
-  S.matched = false; S.ready = false; _currentOpponentId = null;
+  S.matched = false; S.ready = false; S.pendingMatch = false; _currentOpponentId = null;
+  clearTimeout(_autoTimeout);
   document.getElementById('match-banner').style.display = 'none';
   updateSub(); syncMainButton(); updateActionRow();
   await api('/api/cancel', 'POST', {});
@@ -907,25 +975,12 @@ function updateActionRow() {
 }
 
 // ── Connect ────────────────────────────────────────────────────────────────────
-async function connect(targetId, host, targetLink='') {
+async function connect(targetId) {
   if (!S.profile) { openSheet(true); return; }
-  const myLink = S.profile.parsec_link || '';
-  if (!myLink && !targetLink) {
-    haptic('heavy'); toast('Cả hai chưa có link Parsec!');
-    try {
-      tg?.showPopup({
-        title:'⚠️ Chưa có Parsec Host',
-        message:'Cả hai đều chưa có link Parsec.\nHãy thêm link để có thể chơi cùng nhau!',
-        buttons:[{id:'add',type:'default',text:'Thêm link ngay'},{type:'cancel'}]
-      }, id => { if(id==='add') openSheet(); });
-    } catch(e) { openSheet(); }
-    return;
-  }
   haptic('medium');
-  const d = await api('/api/connect', 'POST', {target_id:targetId, host});
+  const d = await api('/api/connect', 'POST', {target_id: targetId});
   if (d.error) { toast(d.error); refreshLobby(); return; }
-  if (d.link) { tg ? tg.openLink(d.link) : window.open(d.link,'_blank','noopener'); }
-  showMatchBanner(d.opponent||'', d.link||'', d.opponent_id||'');
+  showPendingPopup(d.opponent||'', d.link||'', d.opponent_id||'');
   refreshLobby();
 }
 
