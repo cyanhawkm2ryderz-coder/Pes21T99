@@ -99,6 +99,78 @@ async def _notify_subscribers(entering_name, entering_wid):
             await _bot_send(wid[3:],
                 f"🔔 *{entering_name}* vào lobby tìm đối!\n\nMở app để ghép trận ngay!")
 
+COOLDOWN_ALL_HOURS = 6
+
+async def _broadcast_all(sender_wid, text):
+    if not _bot_app:
+        return
+    conn = get_db()
+    try:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT web_id FROM players WHERE web_id != %s", (sender_wid,))
+            wids = [r["web_id"] for r in cur.fetchall()]
+    finally:
+        conn.close()
+    tasks = [
+        _bot_app.bot.send_message(chat_id=int(w[3:]), text=text, parse_mode="Markdown",
+                                  disable_web_page_preview=True)
+        for w in wids if w.startswith("tg_")
+    ]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    sent = sum(1 for r in results if not isinstance(r, Exception))
+    print(f"[ALL] Sent {sent}/{len(tasks)} DMs", flush=True)
+
+async def cmd_all(update, ctx):
+    from telegram import Update as TGUpdate
+    uid  = update.effective_user.id
+    wid  = f"tg_{uid}"
+    text = " ".join(ctx.args).strip() if ctx.args else ""
+    if not text:
+        await update.message.reply_text("Cú pháp: /all [nội dung thông báo]")
+        return
+    conn = get_db()
+    try:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT display_name, last_all_req FROM players WHERE web_id=%s", (wid,))
+            player = cur.fetchone()
+    finally:
+        conn.close()
+    if not player:
+        await update.message.reply_text("Bạn chưa dùng app! Mở app lobby trước nhé.")
+        return
+    if player.get("last_all_req"):
+        diff = datetime.now() - datetime.fromisoformat(player["last_all_req"])
+        if diff.total_seconds() < COOLDOWN_ALL_HOURS * 3600:
+            rem = int(COOLDOWN_ALL_HOURS * 3600 - diff.total_seconds())
+            h, m = rem // 3600, (rem % 3600) // 60
+            await update.message.reply_text(
+                f"Bạn vừa dùng /all rồi. Còn {h} tiếng {m} phút nữa mới dùng được!"
+            )
+            return
+    broadcast_text = f"📢 *{player['display_name']}:* {text}"
+    # Post vào group
+    if GROUP_CHAT_ID:
+        try:
+            kwargs = dict(chat_id=GROUP_CHAT_ID, text=broadcast_text,
+                          parse_mode="Markdown", disable_web_page_preview=True)
+            if GROUP_TOPIC_ID:
+                kwargs["message_thread_id"] = int(GROUP_TOPIC_ID)
+            await _bot_app.bot.send_message(**kwargs)
+        except Exception as ex:
+            print(f"[ALL GROUP ERR] {ex}", flush=True)
+    # Cập nhật cooldown
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE players SET last_all_req=%s WHERE web_id=%s",
+                        (datetime.now().isoformat(), wid))
+        conn.commit()
+    finally:
+        conn.close()
+    # DM tất cả (background)
+    _fire(_broadcast_all(wid, broadcast_text))
+    await update.message.reply_text("✅ Đã gửi thông báo tới tất cả!")
+
 async def _init_bot():
     global _bot_app
     if not BOT_TOKEN:
@@ -132,6 +204,7 @@ async def _init_bot():
         application.add_handler(CommandHandler("cancel",  cmd_cancel))
         application.add_handler(CommandHandler("profile", cmd_profile))
         application.add_handler(CommandHandler("timdoi",  cmd_lobby))
+        application.add_handler(CommandHandler("all",     cmd_all))
         application.add_handler(CallbackQueryHandler(cb_host_them, pattern=r"^host_them:\d+$"))
         application.add_handler(CallbackQueryHandler(cb_host_me,   pattern=r"^host_me:\d+$"))
         await application.initialize()
@@ -191,10 +264,11 @@ def init_db():
                 )
             """)
             for col, defn in [
-                ("notify_me",   "INTEGER DEFAULT 0"),
-                ("thumbs_up",   "INTEGER DEFAULT 0"),
-                ("thumbs_down", "INTEGER DEFAULT 0"),
-                ("status",      "TEXT DEFAULT 'idle'"),
+                ("notify_me",    "INTEGER DEFAULT 0"),
+                ("thumbs_up",    "INTEGER DEFAULT 0"),
+                ("thumbs_down",  "INTEGER DEFAULT 0"),
+                ("status",       "TEXT DEFAULT 'idle'"),
+                ("last_all_req", "TEXT"),
             ]:
                 cur.execute(f"ALTER TABLE players ADD COLUMN IF NOT EXISTS {col} {defn}")
             cur.execute("""
