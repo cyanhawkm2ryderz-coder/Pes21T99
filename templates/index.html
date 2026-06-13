@@ -549,7 +549,7 @@ if (tg) {
   tg.ready(); tg.expand();
   try { tg.setHeaderColor('secondary_bg_color'); } catch(e){}
   try { tg.enableClosingConfirmation(); } catch(e){}
-  try { tg.MainButton.hide(); } catch(e){}  // shown via syncMainButton once profile loads
+  try { tg.MainButton.hide(); } catch(e){}
 }
 
 function haptic(t='light') { try { tg?.HapticFeedback.impactOccurred(t); } catch(e){} }
@@ -559,8 +559,7 @@ const TIER_STARS = {'Tier 1':'⭐⭐⭐⭐⭐','Tier 2':'⭐⭐⭐⭐','Tier 3':
 const TIER_CLASS = {'Tier 1':'t1','Tier 2':'t2','Tier 3':'t3','Tier 4':'t4','Tier 5':'t5'};
 const AV_COLORS  = ['#ef5350','#e91e63','#9c27b0','#3f51b5','#2196f3','#009688','#4caf50','#ff9800','#ff5722'];
 
-let S = { webId: null, profile: null, ready: false, matched: false, pendingMatch: false };
-let _autoTimeout = null;
+let S = { webId: null, profile: null, matched: false, pendingMatch: false };
 let _currentOpponentId = null;
 let _rated = false;
 
@@ -631,7 +630,7 @@ function renderPanel() {
   ab.textContent = initials(p.display_name);
   ab.style.background = avColor(p.display_name);
   ab.style.display = 'flex';
-  updateSub(); syncMainButton(); renderLinkBar();
+  updateSub(); renderLinkBar();
   const nb = document.getElementById('notify-bar');
   if (nb) { nb.style.display = 'flex'; }
   const nt = document.getElementById('notify-toggle');
@@ -645,54 +644,6 @@ function updateSub() {
   dot.className = S.matched ? 'status-dot on' : 'status-dot';
   const link = p.parsec_link ? p.parsec_link.replace('https://','').slice(0,28) : 'Chưa có link';
   sub.textContent = `${TIER_STARS[p.tier]||''} ${p.tier} · ${link}`;
-}
-
-// ── MainButton (Ghép Random) ───────────────────────────────────────────────────
-function syncMainButton() {
-  if (!tg?.MainButton || !S.profile) return;
-  tg.MainButton.offClick(onMainBtn);
-  if (S.matched) { tg.MainButton.hide(); return; }
-  if (S.ready) {
-    tg.MainButton.setParams({text:'✕ Hủy Ghép Random', color:'#c0392b', text_color:'#ffffff'});
-  } else {
-    const c  = tg.themeParams.button_color      || '#5288c1';
-    const ct = tg.themeParams.button_text_color || '#ffffff';
-    tg.MainButton.setParams({text:'🎲 Ghép Random', color:c, text_color:ct});
-  }
-  tg.MainButton.show();
-  tg.MainButton.onClick(onMainBtn);
-}
-function onMainBtn() { haptic('medium'); S.ready ? cancelReady() : doReady(true); }
-
-async function doReady(auto) {
-  if (!S.profile) { openSheet(true); return; }
-  haptic('medium');
-  S.ready = true; S.matched = false;
-  document.getElementById('match-banner').style.display = 'none';
-  syncMainButton();
-  toast('Đang tìm đối thủ random...');
-  clearTimeout(_autoTimeout);
-  _autoTimeout = setTimeout(() => {
-    if (S.ready && !S.matched && !S.pendingMatch) {
-      cancelReady();
-      toast('Hết 2 phút — tự hủy tìm trận');
-    }
-  }, 120000);
-  const d = await api('/api/ready', 'POST', {auto});
-  if (d.matched) {
-    clearTimeout(_autoTimeout);
-    showPendingPopup(d.opponent || '', d.link || '', d.opponent_id || '');
-  }
-  refreshLobby();
-}
-
-async function cancelReady() {
-  haptic('light'); S.ready = false; S.pendingMatch = false;
-  clearTimeout(_autoTimeout);
-  document.getElementById('pending-overlay').classList.remove('show');
-  syncMainButton();
-  await api('/api/cancel', 'POST', {});
-  toast('Đã hủy'); refreshLobby();
 }
 
 // ── Lobby ──────────────────────────────────────────────────────────────────────
@@ -793,10 +744,10 @@ function copyIngame(name) {
 let _matchTimer;
 
 function showMatchBanner(opponentName, link, opponentId) {
-  S.matched = true; S.ready = false; S.pendingMatch = false; _rated = false; _hostNotified = false;
+  S.matched = true; S.pendingMatch = false; _rated = false; _hostNotified = false;
   _currentOpponentId = opponentId || null;
   haptic('heavy'); playMatchSound();
-  updateSub(); syncMainButton();
+  updateSub();
 
   const desc     = document.getElementById('match-desc');
   const nolink   = document.getElementById('match-nolink');
@@ -894,9 +845,8 @@ function acceptMatch() {
 async function declineMatch() {
   haptic('light');
   document.getElementById('pending-overlay').classList.remove('show');
-  S.pendingMatch = false; S.ready = false;
-  clearTimeout(_autoTimeout);
-  updateSub(); syncMainButton();
+  S.pendingMatch = false;
+  updateSub();
   await api('/api/decline', 'POST', {});
   toast('Đã từ chối trận'); refreshLobby();
   _pendingOpponent = null; _pendingLink = null; _pendingOppId = null;
@@ -913,10 +863,9 @@ async function checkStatus() {
 
 async function endMatch() {
   haptic('light');
-  S.matched = false; S.ready = false; S.pendingMatch = false; _currentOpponentId = null;
-  clearTimeout(_autoTimeout);
+  S.matched = false; S.pendingMatch = false; _currentOpponentId = null;
   document.getElementById('match-banner').style.display = 'none';
-  updateSub(); syncMainButton();
+  updateSub();
   await api('/api/cancel', 'POST', {});
   toast('Đã kết thúc trận'); refreshLobby();
 }
