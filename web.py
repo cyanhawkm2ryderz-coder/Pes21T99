@@ -309,11 +309,16 @@ def ping():
     if not player:
         return jsonify({"error": "not found"}), 404
     now    = datetime.now().isoformat()
-    cutoff = (datetime.now() - timedelta(seconds=35)).isoformat()
+    cutoff = (datetime.now() - timedelta(seconds=60)).isoformat()
     conn = get_db()
     try:
         with conn.cursor() as cur:
             cur.execute("UPDATE players SET last_seen=%s WHERE web_id=%s", (now, wid))
+            if player.get("status") not in ("busy", "pending_match"):
+                cur.execute("""
+                    UPDATE players SET is_ready=1, status='waiting'
+                    WHERE web_id=%s AND status NOT IN ('busy','pending_match')
+                """, (wid,))
             cur.execute("SELECT COUNT(*) FROM players WHERE last_seen >= %s", (cutoff,))
             count = cur.fetchone()[0]
         conn.commit()
@@ -324,15 +329,16 @@ def ping():
 
 @app.route("/api/lobby")
 def lobby():
-    cutoff = (datetime.now() - timedelta(minutes=5)).isoformat()
+    cutoff = (datetime.now() - timedelta(seconds=60)).isoformat()
     conn = get_db()
     try:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("""
                 SELECT * FROM players
-                WHERE is_ready=1
-                   OR (status='busy' AND last_seen >= %s)
-                ORDER BY is_ready DESC, updated_at ASC
+                WHERE last_seen >= %s
+                ORDER BY
+                  CASE WHEN status='busy' THEN 1 ELSE 0 END ASC,
+                  last_seen DESC
             """, (cutoff,))
             rows = cur.fetchall()
     finally:
@@ -501,12 +507,12 @@ def connect():
     try:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
-                "SELECT * FROM players WHERE web_id=%s AND is_ready=1 AND matched_with IS NULL",
+                "SELECT * FROM players WHERE web_id=%s AND status NOT IN ('busy','pending_match') AND matched_with IS NULL",
                 (target_wid,)
             )
             target = cur.fetchone()
             if not target:
-                return jsonify({"error": "Slot đã bị khoá!"}), 409
+                return jsonify({"error": "Người này đang bận!"}), 409
             target = dict(target)
             my_link     = me.get("parsec_link") or ""
             target_link = target.get("parsec_link") or ""

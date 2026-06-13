@@ -373,12 +373,6 @@ header h1 span{color:var(--accent)}
       </div>
     </div>
 
-    <div id="action-row">
-      <button class="btn-act manual" id="btn-lobby"   onclick="doReady(false)"><i class="bi bi-list-ul"></i> Danh sách chờ</button>
-      <button class="btn-act auto"   id="btn-auto"    onclick="doReady(true)"><i class="bi bi-shuffle"></i> Ghép Random</button>
-      <button class="btn-act cancel" id="btn-cancel2" style="display:none" onclick="cancelReady()"><i class="bi bi-x-lg"></i> Hủy</button>
-    </div>
-
     <div id="match-banner">
       <h2><i class="bi bi-controller" style="color:var(--accent)"></i> Ghép trận thành công!</h2>
       <p id="match-desc"></p>
@@ -405,14 +399,9 @@ header h1 span{color:var(--accent)}
       </label>
     </div>
 
-    <div class="section-label">Đang tìm đối</div>
+    <div class="section-label">Đang online</div>
     <div id="lobby">
-      <div class="empty"><span><i class="bi bi-moon-stars" style="font-size:2rem"></i></span>Chưa có ai tìm đối</div>
-    </div>
-
-    <div id="busy-section">
-      <div class="section-label" style="margin-top:6px">Đang đấu</div>
-      <div id="busy-list"></div>
+      <div class="empty"><span><i class="bi bi-moon-stars" style="font-size:2rem"></i></span>Chưa có ai online</div>
     </div>
 
   </div><!-- /panel-lobby -->
@@ -560,6 +549,7 @@ if (tg) {
   tg.ready(); tg.expand();
   try { tg.setHeaderColor('secondary_bg_color'); } catch(e){}
   try { tg.enableClosingConfirmation(); } catch(e){}
+  try { tg.MainButton.hide(); } catch(e){}
 }
 
 function haptic(t='light') { try { tg?.HapticFeedback.impactOccurred(t); } catch(e){} }
@@ -569,10 +559,9 @@ const TIER_STARS = {'Tier 1':'⭐⭐⭐⭐⭐','Tier 2':'⭐⭐⭐⭐','Tier 3':
 const TIER_CLASS = {'Tier 1':'t1','Tier 2':'t2','Tier 3':'t3','Tier 4':'t4','Tier 5':'t5'};
 const AV_COLORS  = ['#ef5350','#e91e63','#9c27b0','#3f51b5','#2196f3','#009688','#4caf50','#ff9800','#ff5722'];
 
-let S = { webId: null, profile: null, ready: false, matched: false, pendingMatch: false };
+let S = { webId: null, profile: null, matched: false, pendingMatch: false };
 let _currentOpponentId = null;
 let _rated = false;
-let _autoTimeout = null;
 
 function avColor(n) {
   let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))%AV_COLORS.length;
@@ -641,7 +630,7 @@ function renderPanel() {
   ab.textContent = initials(p.display_name);
   ab.style.background = avColor(p.display_name);
   ab.style.display = 'flex';
-  updateSub(); syncMainButton(); updateActionRow(); renderLinkBar();
+  updateSub(); renderLinkBar();
   const nb = document.getElementById('notify-bar');
   if (nb) { nb.style.display = 'flex'; }
   const nt = document.getElementById('notify-toggle');
@@ -652,52 +641,21 @@ function updateSub() {
   const p = S.profile; if (!p) return;
   const dot = document.getElementById('status-dot');
   const sub = document.getElementById('my-sub');
-  if (S.ready) {
-    dot.className = 'status-dot on';
-    sub.innerHTML = `<span style="color:var(--accent)">● Đang tìm đối...</span>`;
-  } else {
-    dot.className = 'status-dot';
-    const link = p.parsec_link ? p.parsec_link.replace('https://','').slice(0,28) : 'Chưa có link';
-    sub.textContent = `${TIER_STARS[p.tier]||''} ${p.tier} · ${link}`;
-  }
+  dot.className = S.matched ? 'status-dot on' : 'status-dot';
+  const link = p.parsec_link ? p.parsec_link.replace('https://','').slice(0,28) : 'Chưa có link';
+  sub.textContent = `${TIER_STARS[p.tier]||''} ${p.tier} · ${link}`;
 }
-
-// ── MainButton ─────────────────────────────────────────────────────────────────
-function syncMainButton() {
-  if (!tg?.MainButton || !S.profile) return;
-  tg.MainButton.offClick(onMainBtn);
-  if (S.matched) { tg.MainButton.hide(); return; }
-  if (S.ready) {
-    tg.MainButton.setParams({text:'✕ Hủy', color:'#c0392b', text_color:'#ffffff'});
-  } else {
-    const c  = tg.themeParams.button_color      || '#5288c1';
-    const ct = tg.themeParams.button_text_color || '#ffffff';
-    tg.MainButton.setParams({text:'🎲 Ghép Random', color:c, text_color:ct});
-  }
-  tg.MainButton.show();
-  tg.MainButton.onClick(onMainBtn);
-}
-function onMainBtn() { haptic('medium'); S.ready ? cancelReady() : doReady(true); }
 
 // ── Lobby ──────────────────────────────────────────────────────────────────────
 async function refreshLobby() {
   const players = await api('/api/lobby');
-  const waiting = players.filter(p => p.web_id !== S.webId && p.is_ready);
-  const busy    = players.filter(p => p.web_id !== S.webId && !p.is_ready && p.status === 'busy');
+  const others = players.filter(p => p.web_id !== S.webId);
   const el = document.getElementById('lobby');
-  if (!waiting.length) {
-    el.innerHTML = `<div class="empty"><span><i class="bi bi-moon-stars" style="font-size:2rem"></i></span>Chưa có ai tìm đối<br>
-      <small style="margin-top:6px;display:block">Nhấn "Tìm Đối" để vào hàng chờ!</small></div>`;
+  if (!others.length) {
+    el.innerHTML = `<div class="empty"><span><i class="bi bi-moon-stars" style="font-size:2rem"></i></span>Chưa có ai online<br>
+      <small style="margin-top:6px;display:block">Mở app là tự động hiện trong danh sách!</small></div>`;
   } else {
-    el.innerHTML = waiting.map(buildCard).join('');
-  }
-  const busySec  = document.getElementById('busy-section');
-  const busyList = document.getElementById('busy-list');
-  if (busy.length) {
-    busySec.style.display = 'block';
-    busyList.innerHTML = busy.map(buildBusyCard).join('');
-  } else {
-    busySec.style.display = 'none';
+    el.innerHTML = others.map(buildCard).join('');
   }
 }
 
@@ -712,22 +670,12 @@ function waitingTime(updatedAt) {
 }
 
 function buildCard(p) {
-  const tc    = TIER_CLASS[p.tier] || 't5';
-  const ts    = TIER_STARS[p.tier] || '';
   const color = avColor(p.display_name);
   const ini   = initials(p.display_name);
   const myId  = S.webId;
   const wt    = waitingTime(p.updated_at);
 
-  if (!p.is_ready && p.matched_with && p.matched_with !== myId) {
-    return `<div class="card locked">
-      <div class="c-av" style="background:${color}">${ini}</div>
-      <div class="c-info">
-        <div class="c-name">${e(p.display_name)}</div>
-        <div class="c-sub"><i class="bi bi-lock-fill"></i> Đã có đôi</div>
-      </div></div>`;
-  }
-  if (!p.is_ready && p.matched_with === myId && p.match_link) {
+  if (p.status === 'busy' && p.matched_with === myId && p.match_link) {
     return `<div class="card matched">
       <div class="c-av" style="background:${color}">${ini}</div>
       <div class="c-info">
@@ -738,7 +686,15 @@ function buildCard(p) {
     </div>`;
   }
 
-  const canConnect = !!S.profile && p.web_id !== myId;
+  if (p.status === 'busy') {
+    return `<div class="card busy-card">
+      <div class="c-av" style="background:${color}">${ini}</div>
+      <div class="c-info">
+        <div class="c-name">${e(p.display_name)}</div>
+        <div class="c-sub"><span class="busy-tag"><i class="bi bi-record-circle-fill"></i> Đang đấu</span></div>
+      </div>
+    </div>`;
+  }
 
   const hostTag = p.parsec_link
     ? `<span class="htag has-host"><i class="bi bi-check-circle-fill"></i> HOST</span>`
@@ -752,6 +708,7 @@ function buildCard(p) {
     ? `<span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID"><i class="bi bi-joystick"></i> ${e(p.ingame_name)}</span>`
     : '';
 
+  const canConnect = !!S.profile && !S.matched && !S.pendingMatch;
   const challengeBtn = canConnect
     ? `<button class="btn-challenge" onclick="connect('${p.web_id}')">Thách đấu</button>`
     : '';
@@ -773,18 +730,6 @@ function buildCard(p) {
   </div>`;
 }
 
-function buildBusyCard(p) {
-  const color = avColor(p.display_name);
-  const ini   = initials(p.display_name);
-  return `<div class="card busy-card">
-    <div class="c-av" style="background:${color}">${ini}</div>
-    <div class="c-info">
-      <div class="c-name">${e(p.display_name)}</div>
-      <div class="c-sub"><span class="busy-tag"><i class="bi bi-record-circle-fill"></i> Đang đấu</span></div>
-    </div>
-  </div>`;
-}
-
 function copyIngame(name) {
   navigator.clipboard?.writeText(name).catch(() => {
     const el = document.createElement('textarea');
@@ -799,10 +744,10 @@ function copyIngame(name) {
 let _matchTimer;
 
 function showMatchBanner(opponentName, link, opponentId) {
-  S.matched = true; S.ready = false; S.pendingMatch = false; _rated = false; _hostNotified = false;
+  S.matched = true; S.pendingMatch = false; _rated = false; _hostNotified = false;
   _currentOpponentId = opponentId || null;
   haptic('heavy'); playMatchSound();
-  updateSub(); syncMainButton(); updateActionRow();
+  updateSub();
 
   const desc     = document.getElementById('match-desc');
   const nolink   = document.getElementById('match-nolink');
@@ -900,8 +845,8 @@ function acceptMatch() {
 async function declineMatch() {
   haptic('light');
   document.getElementById('pending-overlay').classList.remove('show');
-  S.pendingMatch = false; S.ready = false;
-  updateSub(); syncMainButton(); updateActionRow();
+  S.pendingMatch = false;
+  updateSub();
   await api('/api/decline', 'POST', {});
   toast('Đã từ chối trận'); refreshLobby();
   _pendingOpponent = null; _pendingLink = null; _pendingOppId = null;
@@ -916,62 +861,13 @@ async function checkStatus() {
   }
 }
 
-// ── Ready ──────────────────────────────────────────────────────────────────────
-async function doReady(auto) {
-  if (!S.profile) { openSheet(true); return; }
-  haptic('medium');
-  S.ready = true; S.matched = false;
-  document.getElementById('match-banner').style.display = 'none';
-  updateSub(); syncMainButton(); updateActionRow();
-  toast(auto ? 'Đang tự ghép...' : 'Đã vào lobby...');
-  if (auto) {
-    clearTimeout(_autoTimeout);
-    _autoTimeout = setTimeout(() => {
-      if (S.ready && !S.matched && !S.pendingMatch) {
-        cancelReady();
-        toast('Hết 2 phút — tự hủy tìm trận');
-      }
-    }, 120000);
-  }
-  const d = await api('/api/ready', 'POST', {auto});
-  if (d.matched) {
-    clearTimeout(_autoTimeout);
-    showPendingPopup(d.opponent || '', d.link || '', d.opponent_id || '');
-  }
-  refreshLobby();
-}
-
-async function cancelReady() {
-  haptic('light'); S.ready = false; S.pendingMatch = false;
-  clearTimeout(_autoTimeout);
-  document.getElementById('pending-overlay').classList.remove('show');
-  updateSub(); syncMainButton(); updateActionRow();
-  await api('/api/cancel', 'POST', {});
-  toast('Đã hủy'); refreshLobby();
-}
-
 async function endMatch() {
   haptic('light');
-  S.matched = false; S.ready = false; S.pendingMatch = false; _currentOpponentId = null;
-  clearTimeout(_autoTimeout);
+  S.matched = false; S.pendingMatch = false; _currentOpponentId = null;
   document.getElementById('match-banner').style.display = 'none';
-  updateSub(); syncMainButton(); updateActionRow();
+  updateSub();
   await api('/api/cancel', 'POST', {});
   toast('Đã kết thúc trận'); refreshLobby();
-}
-
-function updateActionRow() {
-  const row  = document.getElementById('action-row');
-  const b1   = document.getElementById('btn-lobby');
-  const b2   = document.getElementById('btn-auto');
-  const bcan = document.getElementById('btn-cancel2');
-  if (!S.profile || S.matched) { row.classList.remove('show'); return; }
-  row.classList.add('show');
-  if (S.ready) {
-    b1.style.display = 'none'; b2.style.display = 'none'; bcan.style.display = 'flex';
-  } else {
-    b1.style.display = ''; b2.style.display = ''; bcan.style.display = 'none';
-  }
 }
 
 // ── Connect ────────────────────────────────────────────────────────────────────
