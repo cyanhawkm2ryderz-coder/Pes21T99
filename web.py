@@ -594,6 +594,8 @@ def connect():
             target = dict(target)
             my_link     = me.get("parsec_link") or ""
             target_link = target.get("parsec_link") or ""
+            if not my_link and not target_link:
+                return jsonify({"error": "Cả hai đều không có link Host! Một trong hai cần thêm link Parsec trước."}), 409
             # Both have host → random pick; else whoever has link is host
             if my_link and target_link:
                 if _random.random() < 0.5:
