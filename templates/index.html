@@ -483,14 +483,6 @@ header h1 span{color:var(--accent)}
     <p class="mc-nolink" id="mc-nolink" style="display:none">
       <i class="bi bi-house-fill"></i> Bạn đang <b>host</b> — mở Parsec và <b>Accept</b> khi đối thủ vào!
     </p>
-    <div class="mc-rating" id="mc-rating" style="display:none">
-      <div class="mc-rating-lbl">Đánh giá đối thủ:</div>
-      <div class="mc-rating-btns">
-        <button class="mc-rate-btn" id="btn-rate-up"   onclick="rateOpponent('up')"><i class="bi bi-hand-thumbs-up-fill"></i></button>
-        <button class="mc-rate-btn" id="btn-rate-down" onclick="rateOpponent('down')"><i class="bi bi-hand-thumbs-down-fill"></i></button>
-      </div>
-    </div>
-    <button id="mc-rematch" style="display:none" onclick="sendRematch()"><i class="bi bi-arrow-repeat"></i> Thách đấu lại</button>
     <button id="mc-close" onclick="closeMatchOverlay()">Đã hiểu</button>
     <div class="mc-timer" id="mc-timer"></div>
   </div>
@@ -688,7 +680,6 @@ function buildCard(p) {
         <div class="c-name">${e(p.display_name)}</div>
         <div class="c-sub"><i class="bi bi-controller"></i> Đang host cho bạn!</div>
       </div>
-      <a class="btn-h them" href="${e(p.match_link)}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Vào</a>
     </div>`;
   }
 
@@ -784,15 +775,6 @@ function showMatchBanner(opponentName, link, opponentId) {
     mcLinkRow.style.display = 'none'; mcNolink.style.display = 'block';
   }
 
-  const ratingEl  = document.getElementById('mc-rating');
-  const rematchEl = document.getElementById('mc-rematch');
-  if (opponentId) {
-    ratingEl.style.display = 'block'; rematchEl.style.display = 'block';
-    document.getElementById('btn-rate-up').className   = 'mc-rate-btn';
-    document.getElementById('btn-rate-down').className = 'mc-rate-btn';
-  } else {
-    ratingEl.style.display = 'none'; rematchEl.style.display = 'none';
-  }
 
   document.getElementById('match-overlay').classList.add('show');
 
@@ -815,20 +797,6 @@ function closeMatchOverlay() {
   if (banner.style.display !== 'none') banner.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
-async function rateOpponent(rating) {
-  if (_rated || !_currentOpponentId) return;
-  _rated = true; haptic('light');
-  document.getElementById('btn-rate-up').className   = 'mc-rate-btn' + (rating==='up'   ? ' rated-up' : '');
-  document.getElementById('btn-rate-down').className = 'mc-rate-btn' + (rating==='down' ? ' rated-down' : '');
-  await api('/api/rate', 'POST', {target_id: _currentOpponentId, rating});
-  toast(rating === 'up' ? 'Đã đánh giá tốt!' : 'Đã ghi nhận');
-}
-
-async function sendRematch() {
-  if (!_currentOpponentId) return; haptic('medium');
-  const d = await api('/api/rematch', 'POST', {opponent_id: _currentOpponentId});
-  toast(d.ok ? 'Đã gửi thách đấu!' : (d.msg || 'Không gửi được'));
-}
 
 // ── Pending match popup ────────────────────────────────────────────────────────
 let _pendingOpponent = null;
