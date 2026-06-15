@@ -699,7 +699,7 @@ function buildCard(p) {
 
 
   const igLine = p.ingame_name
-    ? `<span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID"><i class="bi bi-joystick"></i> ${e(p.ingame_name)}</span>`
+    ? `<span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID">ID parsec: <b>${e(p.ingame_name)}</b></span>`
     : '';
 
   const canAct = !!S.profile && !S.matched && !S.pendingMatch;
@@ -722,8 +722,7 @@ function buildCard(p) {
         ${hostTag}
       </div>
       <div class="c-sub">
-        ${wt ? `<span class="timer-tag"><i class="bi bi-clock"></i> ${wt}</span>` : ''}
-        ${igLine ? `<span class="c-ig-sep"> · </span>${igLine}` : ''}
+        ${igLine}
       </div>
     </div>
     ${btns}
