@@ -269,6 +269,7 @@ def init_db():
                 ("thumbs_down",  "INTEGER DEFAULT 0"),
                 ("status",       "TEXT DEFAULT 'idle'"),
                 ("last_all_req", "TEXT"),
+                ("match_type",   "TEXT"),
             ]:
                 cur.execute(f"ALTER TABLE players ADD COLUMN IF NOT EXISTS {col} {defn}")
             cur.execute("""
@@ -321,10 +322,6 @@ def _record_match(cur, wid1, name1, wid2, name2):
         INSERT INTO matches (p1_web_id, p1_name, p2_web_id, p2_name, matched_at)
         VALUES (%s, %s, %s, %s, %s)
     """, (wid1, name1, wid2, name2, now))
-    cur.execute(
-        "UPDATE players SET status='busy' WHERE web_id=%s OR web_id=%s",
-        (wid1, wid2)
-    )
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
@@ -434,6 +431,7 @@ def status():
         "matched_with": player["matched_with"],
         "match_link":   player["match_link"],
         "status":       player.get("status", "idle"),
+        "match_type":   player.get("match_type") or "",
     }
     if player["matched_with"]:
         opp = get_player(player["matched_with"])
@@ -575,12 +573,11 @@ def decline():
 
 @app.route("/api/connect", methods=["POST"])
 def connect():
+    """Tôi muốn vào host của người kia — người kia phải có link."""
     wid, me = auth(request)
     if not me:
         return jsonify({"error": "Chưa đăng ký"}), 401
-    import random as _random
-    d          = request.json or {}
-    target_wid = d.get("target_id", "")
+    target_wid = (request.json or {}).get("target_id", "")
     conn = get_db()
     try:
         with conn.cursor(row_factory=dict_row) as cur:
@@ -592,39 +589,87 @@ def connect():
             if not target:
                 return jsonify({"error": "Người này đang bận!"}), 409
             target = dict(target)
-            my_link     = me.get("parsec_link") or ""
             target_link = target.get("parsec_link") or ""
-            if not my_link and not target_link:
-                return jsonify({"error": "Cả hai đều không có link Host! Một trong hai cần thêm link Parsec trước."}), 409
-            # Both have host → random pick; else whoever has link is host
-            if my_link and target_link:
-                if _random.random() < 0.5:
-                    link_for_me, link_for_target, host = target_link, None, "them"
-                else:
-                    link_for_me, link_for_target, host = None, my_link, "me"
-            elif target_link:
-                link_for_me, link_for_target, host = target_link, None, "them"
-            else:
-                link_for_me, link_for_target, host = None, my_link, "me"
+            if not target_link:
+                return jsonify({"error": "Người này không có host!"}), 409
             now = datetime.now().isoformat()
+            # Tôi là guest → nhận link của họ; họ là host → không cần link
             cur.execute(
-                "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
-                (wid, link_for_target, now, target_wid)
+                "UPDATE players SET is_ready=0, matched_with=%s, match_link=NULL, status='pending_match', match_type='connect', updated_at=%s WHERE web_id=%s",
+                (wid, now, target_wid)
             )
             cur.execute(
-                "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, updated_at=%s WHERE web_id=%s",
-                (target_wid, link_for_me, now, wid)
+                "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, status='pending_match', match_type='connect', updated_at=%s WHERE web_id=%s",
+                (target_wid, target_link, now, wid)
             )
-            _record_match(cur, wid, me["display_name"], target_wid, target["display_name"])
         conn.commit()
     finally:
         conn.close()
-    if host == "them":
-        _fire(_dm_host(target_wid, me["display_name"]))
-    else:
-        _fire(_dm_host(wid, target["display_name"]))
-    return jsonify({"ok": True, "link": link_for_me, "opponent": target["display_name"],
-                    "opponent_id": target_wid})
+    return jsonify({"ok": True, "opponent": target["display_name"], "opponent_id": target_wid})
+
+
+@app.route("/api/invite", methods=["POST"])
+def invite():
+    """Tôi muốn host người kia — tôi phải có link."""
+    wid, me = auth(request)
+    if not me:
+        return jsonify({"error": "Chưa đăng ký"}), 401
+    my_link = me.get("parsec_link") or ""
+    if not my_link:
+        return jsonify({"error": "Bạn chưa có link Parsec! Vui lòng thêm link trước."}), 409
+    target_wid = (request.json or {}).get("target_id", "")
+    conn = get_db()
+    try:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                "SELECT * FROM players WHERE web_id=%s AND status NOT IN ('busy','pending_match') AND matched_with IS NULL",
+                (target_wid,)
+            )
+            target = cur.fetchone()
+            if not target:
+                return jsonify({"error": "Người này đang bận!"}), 409
+            target = dict(target)
+            now = datetime.now().isoformat()
+            # Tôi là host; người kia là guest → nhận link của tôi
+            cur.execute(
+                "UPDATE players SET is_ready=0, matched_with=%s, match_link=%s, status='pending_match', match_type='invite', updated_at=%s WHERE web_id=%s",
+                (wid, my_link, now, target_wid)
+            )
+            cur.execute(
+                "UPDATE players SET is_ready=0, matched_with=%s, match_link=NULL, status='pending_match', match_type='invite', updated_at=%s WHERE web_id=%s",
+                (target_wid, now, wid)
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"ok": True, "opponent": target["display_name"], "opponent_id": target_wid})
+
+
+@app.route("/api/accept", methods=["POST"])
+def accept_match():
+    """B chấp nhận → ghi nhận trận, set cả 2 thành busy."""
+    wid, me = auth(request)
+    if not me:
+        return jsonify({"error": "not found"}), 401
+    opp_wid = me.get("matched_with")
+    if not opp_wid:
+        return jsonify({"error": "Không có trận nào đang chờ"}), 409
+    opp = get_player(opp_wid)
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE players SET status='busy' WHERE web_id=%s OR web_id=%s", (wid, opp_wid))
+            if opp:
+                _record_match(cur, wid, me["display_name"], opp_wid, opp["display_name"])
+        conn.commit()
+    finally:
+        conn.close()
+    match_type = me.get("match_type", "")
+    if match_type == "connect":
+        _fire(_dm_host(opp_wid, me["display_name"]))
+    elif match_type == "invite":
+        _fire(_dm_host(wid, opp["display_name"] if opp else ""))
+    return jsonify({"ok": True, "match_link": me.get("match_link") or ""})
 
 
 # ── A2: Notify-me toggle ───────────────────────────────────────────────────────

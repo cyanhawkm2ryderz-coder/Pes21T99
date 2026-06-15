@@ -127,10 +127,15 @@ header h1 span{color:var(--accent)}
 .c-ig-sep{color:var(--hint);font-size:.65rem}
 .c-ingame{cursor:pointer;user-select:none;font-size:.68rem;color:var(--hint)}
 .c-ingame:active{opacity:.6}
-.btn-challenge{flex-shrink:0;padding:9px 14px;border-radius:10px;border:none;
-  background:var(--accent);color:#000;font-size:.78rem;font-weight:800;
-  cursor:pointer;touch-action:manipulation;white-space:nowrap;align-self:center}
-.btn-challenge:active{opacity:.7;transform:scale(.95)}
+.card-btns{display:flex;flex-direction:column;gap:5px;flex-shrink:0;min-width:108px}
+.btn-connect{padding:10px 12px;border-radius:10px;border:none;
+  background:var(--accent);color:#000;font-size:.8rem;font-weight:800;
+  cursor:pointer;touch-action:manipulation;white-space:nowrap;width:100%}
+.btn-connect:active{opacity:.7;transform:scale(.95)}
+.btn-invite{padding:10px 12px;border-radius:10px;border:1px solid rgba(82,136,193,.5);
+  background:rgba(82,136,193,.12);color:#5288c1;font-size:.8rem;font-weight:700;
+  cursor:pointer;touch-action:manipulation;white-space:nowrap;width:100%}
+.btn-invite:active{opacity:.7;transform:scale(.95)}
 
 /* ── Link bar ── */
 #link-bar{display:none;background:var(--surface);border-radius:12px;
@@ -562,6 +567,7 @@ const AV_COLORS  = ['#ef5350','#e91e63','#9c27b0','#3f51b5','#2196f3','#009688',
 let S = { webId: null, profile: null, matched: false, pendingMatch: false };
 let _currentOpponentId = null;
 let _rated = false;
+let _pendingInitiated = false;
 
 function avColor(n) {
   let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))%AV_COLORS.length;
@@ -708,10 +714,17 @@ function buildCard(p) {
     ? `<span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID"><i class="bi bi-joystick"></i> ${e(p.ingame_name)}</span>`
     : '';
 
-  const canConnect = !!S.profile && !S.matched && !S.pendingMatch;
-  const challengeBtn = canConnect
-    ? `<button class="btn-challenge" onclick="connect('${p.web_id}')">Thách đấu</button>`
+  const canAct = !!S.profile && !S.matched && !S.pendingMatch;
+  const targetHasLink = !!p.parsec_link;
+
+  const connectBtn = canAct && targetHasLink
+    ? `<button class="btn-connect" onclick="connect('${p.web_id}')"><i class="bi bi-plug-fill"></i> Connect</button>`
     : '';
+  const inviteBtn = canAct
+    ? `<button class="btn-invite" onclick="invite('${p.web_id}')"><i class="bi bi-house-fill"></i> Mời vào host</button>`
+    : '';
+  const btns = (connectBtn || inviteBtn)
+    ? `<div class="card-btns">${connectBtn}${inviteBtn}</div>` : '';
 
   return `<div class="card">
     <div class="c-av" style="background:${color}">${ini}<div class="dot"></div></div>
@@ -726,7 +739,7 @@ function buildCard(p) {
         ${igLine ? `<span class="c-ig-sep"> · </span>${igLine}` : ''}
       </div>
     </div>
-    ${challengeBtn}
+    ${btns}
   </div>`;
 }
 
@@ -822,33 +835,46 @@ let _pendingOpponent = null;
 let _pendingLink     = null;
 let _pendingOppId    = null;
 
-function showPendingPopup(name, link, oppId) {
+function showPendingPopup(name, link, oppId, matchType, isInitiator) {
   if (S.pendingMatch || S.matched) return;
   S.pendingMatch = true;
   _pendingOpponent = name; _pendingLink = link; _pendingOppId = oppId;
-  haptic('heavy'); playMatchSound();
+  if (!isInitiator) { haptic('heavy'); playMatchSound(); }
   document.getElementById('pc-opp-name').textContent = name || '—';
-  const info = link
-    ? `<i class="bi bi-house-fill" style="color:var(--accent)"></i> Bạn là <b>Guest</b> — sẽ nhận link Parsec của họ`
-    : `<i class="bi bi-house-fill" style="color:var(--accent)"></i> Bạn là <b>Host</b> — mở Parsec sau khi chấp nhận`;
+  let info;
+  if (isInitiator) {
+    info = matchType === 'invite'
+      ? `<i class="bi bi-hourglass-split" style="color:var(--accent)"></i> Đang chờ <b>${name}</b> chấp nhận lời mời...`
+      : `<i class="bi bi-hourglass-split" style="color:var(--accent)"></i> Đang chờ <b>${name}</b> chấp nhận...`;
+  } else {
+    info = matchType === 'invite'
+      ? `<i class="bi bi-send-fill" style="color:var(--accent)"></i> <b>${name}</b> muốn mời bạn vào host của họ`
+      : `<i class="bi bi-plug-fill" style="color:var(--accent)"></i> <b>${name}</b> muốn vào host của bạn`;
+  }
   document.getElementById('pc-info').innerHTML = info;
+  const acceptBtn = document.querySelector('.pc-accept');
+  const declineBtn = document.querySelector('.pc-decline');
+  if (acceptBtn) acceptBtn.style.display = isInitiator ? 'none' : '';
+  if (declineBtn) declineBtn.textContent  = isInitiator ? '✕ Hủy yêu cầu' : '✕ Từ chối';
   document.getElementById('pending-overlay').classList.add('show');
 }
 
-function acceptMatch() {
+async function acceptMatch() {
   haptic('medium');
   document.getElementById('pending-overlay').classList.remove('show');
-  showMatchBanner(_pendingOpponent, _pendingLink, _pendingOppId);
+  S.pendingMatch = false; _pendingInitiated = false;
+  const d = await api('/api/accept', 'POST', {});
+  showMatchBanner(_pendingOpponent, d.match_link || _pendingLink, _pendingOppId);
   _pendingOpponent = null; _pendingLink = null; _pendingOppId = null;
 }
 
 async function declineMatch() {
   haptic('light');
   document.getElementById('pending-overlay').classList.remove('show');
-  S.pendingMatch = false;
+  S.pendingMatch = false; _pendingInitiated = false;
   updateSub();
   await api('/api/decline', 'POST', {});
-  toast('Đã từ chối trận'); refreshLobby();
+  toast(_pendingInitiated ? 'Đã hủy yêu cầu' : 'Đã từ chối trận'); refreshLobby();
   _pendingOpponent = null; _pendingLink = null; _pendingOppId = null;
 }
 
@@ -856,27 +882,50 @@ async function declineMatch() {
 async function checkStatus() {
   if (!S.webId || S.matched) return;
   const s = await api('/api/status');
-  if (s.matched_with && !S.matched && !S.pendingMatch) {
-    showPendingPopup(s.opponent_name || '', s.match_link || '', s.opponent_id || '');
+  if (S.pendingMatch && _pendingInitiated) {
+    if (!s.matched_with) {
+      S.pendingMatch = false; _pendingInitiated = false;
+      document.getElementById('pending-overlay').classList.remove('show');
+      toast('Đã bị từ chối'); refreshLobby();
+    } else if (s.status === 'busy') {
+      S.pendingMatch = false; _pendingInitiated = false;
+      document.getElementById('pending-overlay').classList.remove('show');
+      showMatchBanner(s.opponent_name||'', s.match_link||'', s.opponent_id||'');
+    }
+    return;
+  }
+  if (s.status === 'pending_match' && s.matched_with && !S.matched && !S.pendingMatch) {
+    showPendingPopup(s.opponent_name||'', s.match_link||'', s.opponent_id||'', s.match_type||'connect', false);
   }
 }
 
 async function endMatch() {
   haptic('light');
-  S.matched = false; S.pendingMatch = false; _currentOpponentId = null;
+  S.matched = false; S.pendingMatch = false; _pendingInitiated = false; _currentOpponentId = null;
   document.getElementById('match-banner').style.display = 'none';
   updateSub();
   await api('/api/cancel', 'POST', {});
   toast('Đã kết thúc trận'); refreshLobby();
 }
 
-// ── Connect ────────────────────────────────────────────────────────────────────
+// ── Connect / Invite ───────────────────────────────────────────────────────────
 async function connect(targetId) {
   if (!S.profile) { openSheet(true); return; }
   haptic('medium');
   const d = await api('/api/connect', 'POST', {target_id: targetId});
   if (d.error) { toast(d.error); refreshLobby(); return; }
-  showPendingPopup(d.opponent||'', d.link||'', d.opponent_id||'');
+  _pendingInitiated = true;
+  showPendingPopup(d.opponent||'', null, d.opponent_id||'', 'connect', true);
+  refreshLobby();
+}
+
+async function invite(targetId) {
+  if (!S.profile) { openSheet(true); return; }
+  haptic('medium');
+  const d = await api('/api/invite', 'POST', {target_id: targetId});
+  if (d.error) { toast(d.error); refreshLobby(); return; }
+  _pendingInitiated = true;
+  showPendingPopup(d.opponent||'', null, d.opponent_id||'', 'invite', true);
   refreshLobby();
 }
 
