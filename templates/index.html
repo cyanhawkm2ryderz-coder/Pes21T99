@@ -857,6 +857,13 @@ async function checkStatus() {
     }
     return;
   }
+  if (S.matched && !s.matched_with) {
+    S.matched = false; _currentOpponentId = null;
+    document.getElementById('match-banner').style.display = 'none';
+    updateSub(); refreshLobby();
+    toast('Đối thủ đã kết thúc trận');
+    return;
+  }
   if (s.status === 'pending_match' && s.matched_with && !S.matched && !S.pendingMatch) {
     showPendingPopup(s.opponent_name||'', s.match_link||'', s.opponent_id||'', s.match_type||'connect', false);
   }

@@ -524,9 +524,10 @@ def set_ready():
 
 @app.route("/api/cancel", methods=["POST"])
 def cancel():
-    wid, _ = auth(request)
+    wid, me = auth(request)
     if not wid:
         return jsonify({"error": "Chưa đăng ký"}), 401
+    opp_wid = (me or {}).get("matched_with")
     conn = get_db()
     try:
         with conn.cursor() as cur:
@@ -535,6 +536,12 @@ def cancel():
                 SET is_ready=0, matched_with=NULL, match_link=NULL, status='idle'
                 WHERE web_id=%s
             """, (wid,))
+            if opp_wid:
+                cur.execute("""
+                    UPDATE players
+                    SET is_ready=0, matched_with=NULL, match_link=NULL, status='idle'
+                    WHERE web_id=%s
+                """, (opp_wid,))
         conn.commit()
     finally:
         conn.close()
