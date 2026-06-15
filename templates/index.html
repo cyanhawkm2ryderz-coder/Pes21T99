@@ -301,6 +301,30 @@ header h1 span{color:var(--accent)}
   font-size:.85rem;cursor:pointer;touch-action:manipulation}
 .mc-timer{font-size:.68rem;color:var(--hint);margin-top:8px}
 
+/* ── Host check overlay ── */
+#host-check-overlay{display:none;position:fixed;inset:0;z-index:700;
+  background:rgba(0,0,0,.92);align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#host-check-overlay.show{display:flex}
+#host-check-card{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:22px;padding:28px 20px 22px;text-align:center;
+  width:calc(100% - 40px);max-width:320px;
+  animation:mpop .35s cubic-bezier(.175,.885,.32,1.275) both}
+.hc-icon{font-size:2.2rem;margin-bottom:10px}
+.hc-title{font-size:1.05rem;font-weight:800;margin-bottom:6px}
+.hc-sub{font-size:.8rem;color:var(--hint);margin-bottom:16px;line-height:1.5}
+.hc-input{width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;padding:10px 12px;color:var(--text);font-size:.82rem;
+  margin-bottom:12px;outline:none;box-sizing:border-box}
+.hc-input:focus{border-color:var(--btn)}
+.hc-btns{display:flex;flex-direction:column;gap:8px}
+.hc-save{padding:12px;border-radius:11px;border:none;background:var(--accent);
+  color:#000;font-size:.88rem;font-weight:800;cursor:pointer;touch-action:manipulation}
+.hc-save:active{opacity:.8}
+.hc-nohost{padding:11px;border-radius:11px;border:1px solid var(--border);
+  background:transparent;color:var(--hint);font-size:.85rem;cursor:pointer;touch-action:manipulation}
+.hc-nohost:active{opacity:.7}
+
 /* ── Pending match popup ── */
 #pending-overlay{display:none;position:fixed;inset:0;z-index:600;
   background:rgba(0,0,0,.88);align-items:center;justify-content:center;
@@ -488,6 +512,20 @@ header h1 span{color:var(--accent)}
   </div>
 </div>
 
+<!-- Host check overlay -->
+<div id="host-check-overlay">
+  <div id="host-check-card">
+    <div class="hc-icon">🎮</div>
+    <div class="hc-title">Bạn có host không?</div>
+    <div class="hc-sub">Paste link Parsec vào đây nếu có.<br>Không có thì ấn "Không có host".</div>
+    <input class="hc-input" id="hc-link-input" type="url" placeholder="https://parsec.gg/g/...">
+    <div class="hc-btns">
+      <button class="hc-save" onclick="saveHostCheck()"><i class="bi bi-check-lg"></i> Có host — Lưu link</button>
+      <button class="hc-nohost" onclick="noHostCheck()"><i class="bi bi-x-lg"></i> Không có host</button>
+    </div>
+  </div>
+</div>
+
 <!-- Pending match popup -->
 <div id="pending-overlay">
   <div id="pending-card">
@@ -597,7 +635,7 @@ async function boot() {
 
   if (S.webId) {
     const d = await api('/api/profile');
-    if (d.web_id) { S.profile = d; renderPanel(); }
+    if (d.web_id) { S.profile = d; renderPanel(); showHostCheck(); }
     else { if (!tgUser) { localStorage.removeItem('pes_id'); S.webId = null; } }
   }
 
@@ -642,6 +680,24 @@ function updateSub() {
   dot.className = S.matched ? 'status-dot on' : 'status-dot';
   const link = p.parsec_link ? p.parsec_link.replace('https://','').slice(0,28) : 'Chưa có link';
   sub.textContent = `${TIER_STARS[p.tier]||''} ${p.tier} · ${link}`;
+}
+
+// ── Host check ─────────────────────────────────────────────────────────────────
+function showHostCheck() {
+  const inp = document.getElementById('hc-link-input');
+  if (inp) inp.value = S.profile?.parsec_link || '';
+  document.getElementById('host-check-overlay').classList.add('show');
+}
+async function saveHostCheck() {
+  const link = document.getElementById('hc-link-input').value.trim();
+  document.getElementById('host-check-overlay').classList.remove('show');
+  const d = await api('/api/setlink', 'POST', {parsec_link: link});
+  if (d.ok) { S.profile.parsec_link = link; updateSub(); renderLinkBar(); }
+}
+async function noHostCheck() {
+  document.getElementById('host-check-overlay').classList.remove('show');
+  const d = await api('/api/setlink', 'POST', {parsec_link: ''});
+  if (d.ok) { S.profile.parsec_link = ''; updateSub(); renderLinkBar(); }
 }
 
 // ── Lobby ──────────────────────────────────────────────────────────────────────
