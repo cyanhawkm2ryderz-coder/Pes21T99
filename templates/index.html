@@ -116,7 +116,7 @@ header h1 span{color:var(--accent)}
 .t3{background:rgba(205,127,50,.15);color:var(--t3)}
 .t4{background:rgba(82,136,193,.15);color:var(--t4)}
 .t5{background:rgba(112,132,153,.15);color:var(--t5)}
-.htag{display:inline-block;padding:1px 6px;border-radius:5px;font-size:.65rem;font-weight:700;margin-right:3px}
+.htag{display:inline-block;padding:3px 9px;border-radius:7px;font-size:.75rem;font-weight:800;margin-right:3px}
 .has-host{background:rgba(0,230,118,.12);color:var(--accent)}
 .no-host{background:rgba(255,77,109,.1);color:#ff6b8a}
 .busy-tag{background:rgba(255,77,109,.12);color:var(--red);font-size:.65rem;font-weight:700;
@@ -697,9 +697,6 @@ function buildCard(p) {
     ? `<span class="htag has-host"><i class="bi bi-check-circle-fill"></i> HOST</span>`
     : `<span class="htag no-host"><i class="bi bi-x-circle-fill"></i> NO HOST</span>`;
 
-  const parsecShort = p.parsec_link
-    ? `<span class="c-parsec">${p.parsec_link.replace('https://','').replace('parsec.gg/g/','').slice(0,18)}…</span>`
-    : `<span class="c-parsec" style="color:var(--hint)">Chưa có link</span>`;
 
   const igLine = p.ingame_name
     ? `<span class="c-ingame" onclick="copyIngame('${e(p.ingame_name).replace(/'/g,"\\'")}')" title="Nhấn để copy ID"><i class="bi bi-joystick"></i> ${e(p.ingame_name)}</span>`
@@ -725,7 +722,6 @@ function buildCard(p) {
         ${hostTag}
       </div>
       <div class="c-sub">
-        ${parsecShort}
         ${wt ? `<span class="timer-tag"><i class="bi bi-clock"></i> ${wt}</span>` : ''}
         ${igLine ? `<span class="c-ig-sep"> · </span>${igLine}` : ''}
       </div>
