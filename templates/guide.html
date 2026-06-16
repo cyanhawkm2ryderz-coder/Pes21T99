@@ -340,13 +340,13 @@ footer b { color: #00e676; }
     </div>
   </div>
 
-  <!-- BƯỚC 1 — Nhập Parsec link -->
+  <!-- BƯỚC 1 — Khai báo host khi mở app -->
   <div class="step-block">
     <div class="step-header">
       <div class="step-num">1</div>
       <div>
-        <div class="step-title">Nhập Parsec Link của bạn</div>
-        <div class="step-sub">Bắt buộc nếu bạn là Host</div>
+        <div class="step-title">Khai báo host khi mở app</div>
+        <div class="step-sub">App tự hỏi mỗi khi bạn vào lobby</div>
       </div>
     </div>
     <div class="phone-wrap">
@@ -355,15 +355,17 @@ footer b { color: #00e676; }
           <span class="title">⚽ PES <span style="color:#00e676">Lobby</span></span>
           <span class="online">● 3 online</span>
         </div>
-        <div class="phone-content">
-          <div class="m-link-bar">
-            <span class="icon">🔗</span>
-            <span class="text has">parsec.app/r/abc123xyz</span>
-            <span style="font-size:.6rem;color:#708499">✏️</span>
-          </div>
-          <div class="m-link-bar" style="opacity:.4;margin-bottom:0">
-            <span class="icon">🔗</span>
-            <span class="text">Chưa có link — nhấn để thêm</span>
+        <div class="phone-content" style="padding:10px 10px 8px">
+          <!-- host-check overlay mockup -->
+          <div style="background:#1e2d3d;border-radius:14px;padding:14px 12px;text-align:center;border:1px solid rgba(82,136,193,.25)">
+            <div style="font-size:1.6rem;margin-bottom:6px">🎮</div>
+            <div style="font-size:.8rem;font-weight:800;color:#f5f5f5;margin-bottom:4px">Bạn có host không?</div>
+            <div style="font-size:.62rem;color:#708499;margin-bottom:10px">Paste link Parsec vào đây nếu có.<br>Không có thì ấn "Không có host".</div>
+            <div style="background:#0d1117;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 10px;font-size:.62rem;color:#708499;text-align:left;margin-bottom:8px">https://parsec.gg/g/...</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="background:#00e676;color:#000;border-radius:8px;padding:8px 4px;font-size:.68rem;font-weight:800">✓ Có host — Lưu link</div>
+              <div style="background:transparent;border:1px solid rgba(255,77,109,.4);color:#ff4d6d;border-radius:8px;padding:8px 4px;font-size:.68rem;font-weight:700">✕ Không có host</div>
+            </div>
           </div>
         </div>
         <div class="m-nav">
@@ -374,16 +376,16 @@ footer b { color: #00e676; }
       </div>
     </div>
     <div class="callout green">
-      <span class="ci">→</span>
-      <span class="ct">Nhấn vào thanh link → nhập link Parsec của bạn → <b>Lưu</b></span>
+      <span class="ci">①</span>
+      <span class="ct">Nếu <b>có host</b>: paste link Parsec → nhấn <b>Có host — Lưu link</b></span>
     </div>
     <div class="callout">
-      <span class="ci">i</span>
-      <span class="ct">Không có link? Bạn là <b>Guest</b> — cần có người Host để kết nối vào</span>
+      <span class="ci">②</span>
+      <span class="ct">Nếu <b>không có host</b>: nhấn <b>Không có host</b> — vẫn vào lobby được bình thường</span>
     </div>
     <div class="tip-box">
       <div class="tip-title">📌 Lấy Parsec Link ở đâu?</div>
-      Mở Parsec → <b>Computers</b> → chọn máy tính của bạn → <b>Copy Link</b>. Link có dạng <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">parsec.app/r/xxxxxx</code>
+      Mở Parsec → <b>Computers</b> → chọn máy tính của bạn → <b>Copy Link</b>. Link có dạng <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">parsec.gg/g/xxxxxx</code>
     </div>
   </div>
 
@@ -408,17 +410,20 @@ footer b { color: #00e676; }
             <div class="m-info">
               <div class="m-name">NguyenVanA</div>
               <div class="m-sub">
-                <span style="background:rgba(0,230,118,.12);color:#00e676;padding:1px 5px;border-radius:4px;font-size:.58rem;font-weight:700">HOST</span>
+                <span style="background:rgba(0,230,118,.12);color:#00e676;padding:2px 7px;border-radius:4px;font-size:.65rem;font-weight:800">CÓ HOST</span>
               </div>
             </div>
-            <div class="m-btn">Thách đấu</div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div class="m-btn" style="font-size:.55rem;padding:3px 7px">Connect</div>
+              <div class="m-btn blue" style="font-size:.55rem;padding:3px 7px">Mời vào host</div>
+            </div>
           </div>
           <div class="m-card">
             <div class="m-av" style="background:#e67e22">T</div>
             <div class="m-info">
               <div class="m-name">TrungPS4</div>
               <div class="m-sub">
-                <span style="background:rgba(255,77,109,.1);color:#ff6b8a;padding:1px 5px;border-radius:4px;font-size:.58rem;font-weight:700">ĐANG ĐẤU</span>
+                <span style="background:rgba(255,77,109,.1);color:#ff6b8a;padding:2px 7px;border-radius:4px;font-size:.65rem;font-weight:800">ĐANG ĐẤU</span>
               </div>
             </div>
           </div>
@@ -436,17 +441,17 @@ footer b { color: #00e676; }
     </div>
     <div class="callout green">
       <span class="ci">②</span>
-      <span class="ct">Người sẵn sàng có nút <b>Thách đấu</b>, người đang đấu hiện tag <b>Đang đấu</b></span>
+      <span class="ct">Mỗi người có 2 nút: <b>Connect</b> và <b>Mời vào host</b>. Người đang đấu hiện tag <b>Đang đấu</b></span>
     </div>
   </div>
 
-  <!-- BƯỚC 3 — Xem danh sách & thách đấu thủ công -->
+  <!-- BƯỚC 3 — Connect hoặc Mời vào host -->
   <div class="step-block">
     <div class="step-header">
       <div class="step-num">3</div>
       <div>
-        <div class="step-title">Thách đấu thủ công</div>
-        <div class="step-sub">Chọn đối thủ trong danh sách lobby</div>
+        <div class="step-title">Connect hoặc Mời vào host</div>
+        <div class="step-sub">Chọn cách kết nối với đối thủ</div>
       </div>
     </div>
     <div class="phone-wrap">
@@ -463,11 +468,13 @@ footer b { color: #00e676; }
             <div class="m-info">
               <div class="m-name">NguyenVanA</div>
               <div class="m-sub">
-                <span style="background:rgba(0,230,118,.12);color:#00e676;padding:1px 5px;border-radius:4px;font-size:.58rem;font-weight:700">HOST</span>
-                <span style="margin-left:4px">PES2021 · chờ 2 phút</span>
+                <span style="background:rgba(0,230,118,.12);color:#00e676;padding:2px 7px;border-radius:4px;font-size:.65rem;font-weight:800">CÓ HOST</span>
               </div>
             </div>
-            <div class="m-btn">Thách đấu</div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div class="m-btn" style="font-size:.55rem;padding:3px 7px">Connect</div>
+              <div class="m-btn blue" style="font-size:.55rem;padding:3px 7px">Mời vào host</div>
+            </div>
           </div>
           <div class="m-card">
             <div class="m-av" style="background:#e67e22">
@@ -476,11 +483,13 @@ footer b { color: #00e676; }
             <div class="m-info">
               <div class="m-name">TrungPS4</div>
               <div class="m-sub">
-                <span style="background:rgba(255,77,109,.1);color:#ff6b8a;padding:1px 5px;border-radius:4px;font-size:.58rem;font-weight:700">GUEST</span>
-                <span style="margin-left:4px">PES2021 · chờ 5 phút</span>
+                <span style="background:rgba(255,77,109,.1);color:#ff6b8a;padding:2px 7px;border-radius:4px;font-size:.65rem;font-weight:800">NO HOST</span>
               </div>
             </div>
-            <div class="m-btn">Thách đấu</div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div class="m-btn" style="font-size:.55rem;padding:3px 7px">Connect</div>
+              <div class="m-btn blue" style="font-size:.55rem;padding:3px 7px">Mời vào host</div>
+            </div>
           </div>
         </div>
         <div class="m-nav">
@@ -492,11 +501,15 @@ footer b { color: #00e676; }
     </div>
     <div class="callout green">
       <span class="ci">→</span>
-      <span class="ct">Nhấn <b>Thách đấu</b> vào người có tag <span class="tag green">HOST</span> để kết nối vào phòng của họ</span>
+      <span class="ct"><b>Connect</b>: muốn vào <b>host của đối thủ</b> — đối thủ phải có tag <span class="tag green">CÓ HOST</span></span>
+    </div>
+    <div class="callout blue" style="border-color:#5288c1;background:rgba(82,136,193,.07)">
+      <span class="ci" style="color:#5288c1">→</span>
+      <span class="ct"><b>Mời vào host</b>: gửi link Parsec của bạn cho đối thủ — bạn phải có tag <span class="tag green">CÓ HOST</span></span>
     </div>
     <div class="callout">
       <span class="ci">i</span>
-      <span class="ct">Tag <span class="tag green">HOST</span> = có Parsec Link, <span class="tag red">GUEST</span> = chưa có link (cần bạn là host)</span>
+      <span class="ct">Tag <span class="tag green">CÓ HOST</span> = có Parsec Link, <span class="tag red">NO HOST</span> = chưa có link</span>
     </div>
   </div>
 
@@ -613,8 +626,8 @@ footer b { color: #00e676; }
             <div style="width:52px;height:52px;border-radius:50%;background:rgba(82,136,193,.12);
               border:2px solid rgba(82,136,193,.4);display:flex;align-items:center;justify-content:center;
               margin:0 auto 10px;font-size:1.4rem">🎮</div>
-            <div style="font-size:.82rem;font-weight:800;color:#5288c1;margin-bottom:3px">Tìm được đối thủ!</div>
-            <div style="font-size:.65rem;color:#708499;margin-bottom:3px">Đấu với</div>
+            <div style="font-size:.82rem;font-weight:800;color:#5288c1;margin-bottom:3px">Yêu cầu kết nối!</div>
+            <div style="font-size:.65rem;color:#708499;margin-bottom:3px">NguyenVanA muốn vào host của bạn</div>
             <div style="font-size:.9rem;font-weight:700;margin-bottom:10px">NguyenVanA</div>
             <div style="display:flex;gap:8px">
               <div style="flex:1;background:#00e676;color:#000;border-radius:9px;padding:9px 4px;font-size:.7rem;font-weight:800">✓ Chấp nhận</div>
@@ -631,11 +644,15 @@ footer b { color: #00e676; }
     </div>
     <div class="callout green">
       <span class="ci">✓</span>
-      <span class="ct">Nhấn <b>Chấp nhận</b> → trận bắt đầu, hiện banner kết nối Parsec</span>
+      <span class="ct">Nhấn <b>Chấp nhận</b> → trận bắt đầu, hiện banner với link Parsec cần dùng</span>
     </div>
     <div class="callout red">
       <span class="ci">✕</span>
-      <span class="ct">Nhấn <b>Từ chối</b> → đối thủ nhận thông báo, cả hai về lại hàng chờ</span>
+      <span class="ct">Nhấn <b>Từ chối</b> → đối thủ nhận thông báo, cả hai về lại lobby bình thường</span>
+    </div>
+    <div class="callout">
+      <span class="ci">i</span>
+      <span class="ct">Khi 1 người nhấn <b>Kết thúc trận</b> → <b>cả 2</b> tự động kết thúc, không cần nhấn thêm</span>
     </div>
   </div>
 
@@ -659,21 +676,21 @@ footer b { color: #00e676; }
             <div style="font-size:1.1rem;width:24px;text-align:center">🥇</div>
             <div class="m-info">
               <div class="m-name" style="font-size:.75rem">NguyenVanA</div>
-              <div class="m-sub">12 trận · 👍 24</div>
+              <div class="m-sub">12 trận đã đá</div>
             </div>
           </div>
           <div class="m-card" style="margin-bottom:5px">
             <div style="font-size:1.1rem;width:24px;text-align:center">🥈</div>
             <div class="m-info">
               <div class="m-name" style="font-size:.75rem">TrungPS4</div>
-              <div class="m-sub">9 trận · 👍 18</div>
+              <div class="m-sub">9 trận đã đá</div>
             </div>
           </div>
           <div class="m-card">
             <div style="font-size:1.1rem;width:24px;text-align:center">🥉</div>
             <div class="m-info">
               <div class="m-name" style="font-size:.75rem">MinhCuong</div>
-              <div class="m-sub">7 trận · 👍 15</div>
+              <div class="m-sub">7 trận đã đá</div>
             </div>
           </div>
         </div>
@@ -686,11 +703,7 @@ footer b { color: #00e676; }
     </div>
     <div class="callout gold">
       <span class="ci">→</span>
-      <span class="ct">Xếp hạng theo <b>số trận đã đá</b> và <b>số lượt thích</b> từ đối thủ</span>
-    </div>
-    <div class="callout">
-      <span class="ci">i</span>
-      <span class="ct">Sau mỗi trận, nhớ nhấn 👍/👎 đánh giá đối thủ — giúp lọc người chơi tốt</span>
+      <span class="ct">Xếp hạng theo <b>số trận đã đá</b> — đá càng nhiều càng lên cao</span>
     </div>
   </div>
 
@@ -721,8 +734,8 @@ footer b { color: #00e676; }
           </div>
           <div style="background:#232e3c;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <div>
-              <div style="font-size:.72rem;font-weight:700;color:#b0bec5">THÔNG BÁO LOBBY</div>
-              <div style="font-size:.62rem;color:#708499;margin-top:2px">Bot DM khi có người tìm trận</div>
+              <div style="font-size:.72rem;font-weight:700;color:#b0bec5">THÔNG BÁO</div>
+              <div style="font-size:.62rem;color:#708499;margin-top:2px">Bật thông báo khi có người tìm đối</div>
             </div>
             <div style="width:36px;height:20px;background:#00e676;border-radius:10px;position:relative">
               <div style="position:absolute;right:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%"></div>
@@ -739,11 +752,11 @@ footer b { color: #00e676; }
     </div>
     <div class="callout green">
       <span class="ci">🔔</span>
-      <span class="ct">Bật <b>Thông báo lobby</b> ngay ở trang chủ — bot DM khi có người tìm trận</span>
+      <span class="ct">Bật <b>Thông báo</b> ngay ở trang chủ — bot DM khi có người tìm đối</span>
     </div>
     <div class="callout">
       <span class="ci">i</span>
-      <span class="ct">Xem lại lịch sử các trận đã đá và đánh giá từ đối thủ tại tab Tôi</span>
+      <span class="ct">Xem lại lịch sử các trận đã đá tại tab Tôi</span>
     </div>
   </div>
 
@@ -755,26 +768,26 @@ footer b { color: #00e676; }
     <div style="display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div style="width:24px;height:24px;border-radius:50%;background:#5288c1;color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
-        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Nhập Parsec Link (nếu là Host) hoặc bỏ qua (nếu là Guest)</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Mở app → khai báo host: paste link Parsec hoặc nhấn <b style="color:#fff">Không có host</b></div>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div style="width:24px;height:24px;border-radius:50%;background:#5288c1;color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
-        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Mở app → <b style="color:#fff">tự hiện trong lobby</b>. Nhấn <b style="color:#fff">Thách đấu</b> người muốn đấu</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px"><b style="color:#fff">Tự hiện trong lobby.</b> Nhấn <b style="color:#fff">Connect</b> (vào host đối thủ) hoặc <b style="color:#fff">Mời vào host</b> (gửi link của mình)</div>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div style="width:24px;height:24px;border-radius:50%;background:#00e676;color:#000;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
-        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Popup hiện lên → <b style="color:#fff">Chấp nhận</b> → Guest copy link → Host mở Parsec & Accept</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Popup hiện lên → <b style="color:#fff">Chấp nhận</b> → nhận link Parsec → mở Parsec kết nối</div>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div style="width:24px;height:24px;border-radius:50%;background:#ffd700;color:#000;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
-        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Đá xong → nhấn <b style="color:#ff4d6d">🔴 Kết thúc trận</b> → đánh giá đối thủ 👍/👎</div>
+        <div style="font-size:.82rem;color:#b0bec5;padding-top:3px">Đá xong → nhấn <b style="color:#ff4d6d">🔴 Kết thúc trận</b> → cả 2 người tự động kết thúc</div>
       </div>
     </div>
   </div>
 
   <div class="tip-box" style="margin:0 0 16px">
     <div class="tip-title">💡 Mẹo</div>
-    Bật <b>Thông báo lobby</b> ngay ở trang chủ để bot tự nhắn khi có người vào lobby — không cần ngồi chờ mở app!
+    Bật <b>Thông báo</b> ngay ở trang chủ để bot tự nhắn khi có người tìm đối — không cần ngồi chờ mở app!
   </div>
 
 </div>
